@@ -63,22 +63,22 @@ What is there to be done?
 -------------------------
 
 A lot! 
-	The program needs much more testing than I have already done. 
-	Add list for played moves.
-	Undo functionality for moves.
-	Show the best variant considered.
-	Making use of computed hashes for each position to save time on computing a position
-		that was already done, when a different order of moves was played. 
-	Better evaluation by making use of influence data and pins.
-	Making use of different fail hard and fail soft mechanisms.
-	Improve quiescence routine to include move that give check.
-	Include rules for draw when repetitive moves are made by the players.
-	Make program compatible to compete against other chess programs.
-	Create a version for the next release of Red.  
-	Make use of general move databases.
-	Check and improve the hash used. I have the idea that the hash code can be shortened,
-		but I am not 100% sure about that.
-	Add file I/O to export played games and import new positions. (Wait for Red I/O).
+    The program needs much more testing than I have already done. 
+    Add list for played moves.
+    Undo functionality for moves.
+    Show the best variant considered.
+    Making use of computed hashes for each position to save time on computing a position
+        that was already done, when a different order of moves was played. 
+    Better evaluation by making use of influence data and pins.
+    Making use of different fail hard and fail soft mechanisms.
+    Improve quiescence routine to include move that give check.
+    Include rules for draw when repetitive moves are made by the players.
+    Make program compatible to compete against other chess programs.
+    Create a version for the next release of Red.  
+    Make use of general move databases.
+    Check and improve the hash used. I have the idea that the hash code can be shortened,
+        but I am not 100% sure about that.
+    Add file I/O to export played games and import new positions. (Wait for Red I/O).
 	
 Please do not count too much on me to fill in all the blancs here. I never played an 
 actual game of Xiangqi in my life! 
