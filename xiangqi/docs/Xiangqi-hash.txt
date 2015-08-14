@@ -1,0 +1,98 @@
+Xiangqi programmed in Red documentation.
+========================================
+
+The Hash function
+=================
+
+We could have made a program like existing programs in C more or less copying 
+everything, translating to Red or Red/System. We also could have used the commonly 
+used hash function using the bitboards other programs use.
+
+But where is the fun in that? 
+Besides this program doesn't have any bitboard to be used, so here I made a function 
+according to a different insight.
+
+Looking at the board, we notice it could be divided into 6 equal parts like this.
+
+10 20 30    40 50 60    70 80 90
+ 9 19 29    39 49 59    69 79 89
+ 8 18 28    38 48 58    68 78 88
+ 7 17 27    37 47 57    67 77 87
+ 6 16 26    36 46 56    66 76 86
+                        
+ 5 15 25    35 45 55    65 75 85
+ 4 14 24    34 44 54    64 74 84
+ 3 13 23    33 43 53    63 73 83
+ 2 12 22    32 42 52    62 72 82
+ 1 11 21    31 41 51    61 71 81
+
+Now we number these sextants 
+ 4 5 6
+ 1 2 3
+ 
+The sextant function. The idea is when a move is done the hash-value should be recalculated
+but the way we do this is only for the one or 2 sextants the move is affecting.
+}
+The idea is we can compute unique numbers for each sextant representing the parts of the board by
+multiplying the fieldnumber with the piece on it, and adding these values together for each sextant.
+
+Because multiplying bigger number takes longer than small ones, it certainly does if I do it manually ;-),
+and because we want to profit from some symmetry I came up with the first multiplication-table:
+
+[
+ 1  2  3  4  5     5  4  3  2  1
+11 12 13 14 15    15 14 13 12 11
+21 22 23 24 25    25 24 23 22 21
+
+11 12 13 14 15    15 14 13 12 11
+ 1  2  3  4  5     5  4  3  2  1
+21 22 23 24 25    25 24 23 22 21
+
+21 22 23 24 25    25 24 23 22 21
+11 12 13 14 15    15 14 13 12 11
+ 1  2  3  4  5     5  4  3  2  1
+]
+
+It is simpler, and probably faster too, to lookup the multiplication factor than computing the value from the 
+given fieldnumber.
+
+But it is easily seen that for our red pieces on the board differ by a factor 2, we get problems for 
+switched pieces on the fields with numbers 1, 2, 4, 12, 24 so I multiplied the rows with a factor of
+respectively 1, 3, 5, 7 and 11 to make it more unique.
+[
+ 1  6  15  28  55    55  28  15  6  1
+11 36  65  98 165   165  98  65 36 11
+21 66 115 168 275   275 168 115 66 21
+
+11 36  65  98 165   165  98  65 36 11
+ 1  6  15  28  55    55  28  15  6  1
+21 66 115 168 275   275 168 115 66 21
+
+21 66 115 168 275   275 168 115 66 21
+11 36  65  98 165   165  98  65 36 11
+ 1  6  15  28  55    55  28  15  6  1
+]
+
+But now the values are still getting pretty large 
+(up to 144609 (< 2^18) though in practise the values will be much smaller (< 40272)) 
+
+So we step over to the idea to use the first 15 prime numbers > 5 as multiplication factors.
+Now the multiplication factors give unique values for each piece on any place on the board.
+Collisions can still occur, I did not check for that.
+
+Suppose there are all black kings on the squares the maximum value per sextant rises
+to 63855 (< 2^17). In practise these values will be much smaller (< 15000) thus fitting 
+within 16 bits.
+
+We are now ready to calculate some hash values!
+
+To shrink the hash code to a smaller unique value a conversion to a 64 base string 
+is performed.
+Personally I think I would have chosen the conversion string to be just
+"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/"
+but the used one is the 'official' one.
+           1         2         3         4         5         6
+ 0123456789012345678901234567890123456789012345678901234567890123
+"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+TODO list: Code is needed to store and compare the computed hash values.

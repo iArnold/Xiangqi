@@ -1,0 +1,46 @@
+Xiangqi programmed in Red documentation.
+========================================
+
+The Move generating function
+============================
+
+Generating the moves differs from calculating influence of pieces.
+A pinned piece can have influence on a field it cannot move to because it is pinned, but the opponent 
+cannot move their King on a field a pinned piece can see. 
+
+How does the algoritm work?
+
+ for all fields with a piece of color to play
+	for all moves of the piece
+		move piece
+		test position using valid-move?
+		if valid then  
+			set indicator to mark if enemy king is in check
+			set indicator position validated or set value
+			add to move list 
+		undo move piece
+ 	next move of this piece until all moves done
+ next field till end of board
+
+About testing and adding valid moves to the list.
+The function to test and add moves (hence tam) to the list used to be part of the make-move-list function,
+but that did not yet compile in Red 0.5.0 Hopefully one day soon this will be possible and the code can be cleaned.
+This introduces the declaration of extra variables so this information does not have to be passed 31 times.
+Also the call now does not need to be adapted for these extra parameters, so that is a bit of lazy coding here. 
+
+Move formats
+============
+
+Perhaps it is of value to have different formats for the moves in the move list?
+The standard no is [piece-value m n captured giving-check board-change-value]
+Alternatives could be i.e. [m n] or [piece-value m n hash-value-resulting-position]
+
+Move tables
+===========
+Computing a move value largely depends on piece value of pieces on the board.
+A piece can have more influence in the game if it is on a better spot. The move tables 
+provide a rough idea of where generally the pieces have more value to the team.
+The tables for this program have been provided by the document 
+
+ELP document
+http://www.csie.ndhu.edu.tw/~sjyen/Papers/2004CCC.pdf
