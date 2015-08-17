@@ -2,8 +2,8 @@ Red [
 	"Move generation for the game of xiangqi aka Chinese Chess"
 	filename: %xiangqi-moves.red
 	author:   "Arnold van Hofwegen"
-	version:  0.3
-	date:     "30-Mar-2015"
+	version:  0.3.1
+	date:     "17-Aug-2015"
 	needs:	  "xiangqi-move-common.red"
 ]
 
@@ -58,7 +58,7 @@ king-check?: function [
 ][
 	times-check: 0
 	own-king-pos: get-field-king in-board color
-	other-king-pos: get-field-king in-board 1 - color
+	other-king-pos: get-field-king in-board (1 - color)
 
 	; check for check by pawn
 	field: own-king-pos + (power -1 color)

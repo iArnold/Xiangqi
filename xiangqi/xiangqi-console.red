@@ -2,8 +2,8 @@
 	"Console program for Xiangqi"
 	filename: %xiangqi-console.red
 	author:   "Arnold van Hofwegen"
-	version:  0.2
-	date:     "13-Aug-2015"
+	version:  0.2.1
+	date:     "17-Aug-2015"
 ]
 
 ; Import function 'ask and time for initializing random numbers
@@ -159,7 +159,11 @@ until [
 	either 0 = length? move-list [
 		print ["No more legal moves possible for" either RED = player-to-move ["Red"]["Black"]]
 		print ["It seems that" either player-to-move = computer-has ["you"]["I"] "have won this game!"]
-		answer: uppercase load ask "Play a new game? (Y/N)"
+		raw-answer: ask "Play a new game? (Y/N)"
+		answer: load raw-answer
+		if string! = type? answer [
+			answer: uppercase answer
+		]
 		either #"Y" = first answer [
 			start-new-game
 		][
@@ -250,7 +254,11 @@ until [
 						computer-has: 1 - computer-has ; change colors
 					]
 					8 [ ;CMD-NEW: 8
-						answer: uppercase load ask "This starts a new game. Are you sure (Y/N)"
+						raw-answer: ask "This starts a new game. Are you sure (Y/N)"
+						answer: load raw-answer
+						if string! = type? answer [
+							answer: uppercase answer
+						]
 						if "Y" = answer [
 							start-new-game
 						]
