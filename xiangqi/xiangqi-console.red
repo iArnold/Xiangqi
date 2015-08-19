@@ -45,6 +45,19 @@ init-xiangqi-display-set/standard
 in-opening-book: true
 
 ; Board, side to play, moves
+; First make items in 'global' scope
+player-to-move: RED
+move-number: 1
+autoplay: true
+move-history: copy []
+computer-has: BLACK
+search-depth: 2 ; MAX-DEPTH - 1
+console-board: copy start-board
+inactivity-counter: 0
+show-board?: true
+show-moves?: true
+
+; And set them in the init function
 start-new-game: func [
 ][
 	player-to-move: RED
