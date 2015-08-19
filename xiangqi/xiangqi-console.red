@@ -39,23 +39,12 @@ random/seed seconds
 #include %xiangqi-best-move.red
 
 ; Initialize variables for a new game here
-console-board: copy start-board
-move-list: copy []
 init-xiangqi-display-set/standard
-
-; Board, side to play, moves
-computer-has: BLACK
-player-to-move: RED
-move-number: 1
-autoplay: true
-move-history: copy []
-search-depth: 2 ;MAX-DEPTH - 1
 
 ; turn on/off opening book
 in-opening-book: true
 
-inactivity-counter: 0
-
+; Board, side to play, moves
 start-new-game: func [
 ][
 	player-to-move: RED
@@ -73,6 +62,8 @@ start-new-game: func [
 	search-depth: 2 ; MAX-DEPTH - 1
 	console-board: copy start-board
 	inactivity-counter: 0
+ 	show-board?: true
+	show-moves?: true
 ]
 
 start-new-game
@@ -162,9 +153,9 @@ until [
 		raw-answer: ask "Play a new game? (Y/N)"
 		answer: load raw-answer
 		if string! = type? answer [
-			answer: uppercase answer
+			answer: uppercase first answer
 		]
-		either #"Y" = first answer [
+		either #"Y" = answer [
 			start-new-game
 		][
 			ready?: true
@@ -228,7 +219,7 @@ until [
 			][
 			 	answer: uppercase raw-answer
 			 	if string! = type? raw-answer[
-		 			raw_answer: uppercase raw-answer
+		 			raw-answer: uppercase raw-answer
 		 		]
 		 		command-or-move: answer-to-command raw-answer
 		 		switch command-or-move [
@@ -256,10 +247,10 @@ until [
 					8 [ ;CMD-NEW: 8
 						raw-answer: ask "This starts a new game. Are you sure (Y/N)"
 						answer: load raw-answer
-						if string! = type? answer [
-							answer: uppercase answer
+						if string! = type? raw-answer [
+							answer: uppercase first raw-answer
 						]
-						if "Y" = answer [
+						if #"Y" = answer [
 							start-new-game
 						]
 					]
