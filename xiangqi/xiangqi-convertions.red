@@ -81,6 +81,20 @@ display-moves-list: function [
 	display-list: append/only display-list dest-block
 ]
 
+field-to-offset: function [
+	"Fieldnumber to offset for display field highlighting"
+	field [integer!]
+	return: [pair!]
+	/local 
+	p [pair!]
+][
+	p: 0x0
+	field: field - 1
+	p/2: field / 10
+	p/1: 9 - (remainder field 10)
+	p
+]
+
 ;***************************
 ; Routine to print the board
 ;***************************
