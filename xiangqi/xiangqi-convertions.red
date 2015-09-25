@@ -65,19 +65,19 @@ display-moves-list: function [
 	
 	if 1 > length? move-list [ return copy [] ]
 	foreach move move-list [
-		if previous-piece <> move/1 [ ; new piece
+		if previous-piece <> move/2 [ ; new startfield
 			if 0 < previous-piece [ ; not first to prevent an empty block at beginning
 				display-list: append display-list previous-piece
 				display-list: append/only display-list dest-block
 			]
 			; clear the destinations block
 			dest-block: copy []
-			previous-piece: move/1
+			previous-piece: move/2
 		]
-		dest-block: append dest-block move/2
+		dest-block: append dest-block move/3
 	]
 	; add the last info too
-	display-list: append display-list move/1
+	display-list: append display-list move/2
 	display-list: append/only display-list dest-block
 ]
 
