@@ -2,8 +2,8 @@ Red [
 	"Position evaluation for the game of xiangqi aka Chinese Chess"
 	filename: %xiangqi-evaluate.red
 	author:   "Arnold van Hofwegen"
-	version:  0.2
-	date:     "27-Feb-2015"
+	version:  0.2.1
+	date:     "28-Sep-2015"
 	needs:    "%xiangqi-common.red #include via main program or testprogram"
 ]
 ;********************
@@ -50,15 +50,15 @@ evaluate-board: function [
 	"Simple evaluation routine for the entire board"
 	board [block!]
 	return: [integer!]
-	/local i [integer!] move-piece [integer!] piece-value [integer!] total-value [integer!]
+	/local i [integer!] moving-piece [integer!] piece-value [integer!] total-value [integer!]
 ][
 	; for now no difference in red/black
 	total-value: 0
 	repeat i 90 [
-		move-piece: board/:i
-		if move-piece > 0 [
-			piece-value: get-piece-added-value move-piece i
-			total-value: total-value + either even? move-piece [piece-value][negate piece-value]
+		moving-piece: board/:i
+		if moving-piece > 0 [
+			piece-value: get-piece-added-value moving-piece i
+			total-value: total-value + either even? moving-piece [piece-value][negate piece-value]
 		]
 	]
 
@@ -69,27 +69,28 @@ evaluate-move-value: function [
 	"Simple evaluation routine for how the move changes the board value"
 	move [block!]
 	return: [integer!]
-	/local change-value [integer!] move-piece [integer!] dest-field-value [integer!] move-value [integer!]
+	/local change-value [integer!] moving-piece [integer!] what-is-on-destination [integer!] move-value [integer!]
+	from-field [integer!] destination-field [integer!]
 ][
 	; a move is here the moving piece from field, destination field and the value of the board at the destination
-	move-piece: move/1
-	from: move/2
-	dest: move/3
-	dest-field-value: move/4
+	moving-piece: move/1
+	from-field: move/2
+	destination-field: move/3
+	what-is-on-destination: move/4
 
 	; Calculate relative value of the move
 	move-value: 0
 	; plus  old position destination field ( <> 0 if capture of opposite piece)
-	if 0 < dest-field-value [
-		change-value: get-piece-added-value dest-field-value dest
+	if 0 < what-is-on-destination [
+		change-value: get-piece-added-value what-is-on-destination destination-field
 		move-value: move-value + change-value
 	]
 	; plus  new position piece
-	change-value: get-piece-added-value move-piece dest
+	change-value: get-piece-added-value moving-piece destination-field
 
 	move-value: move-value + change-value
 	; minus old position
-	change-value: get-piece-added-value move-piece from
+	change-value: get-piece-added-value moving-piece from-field
 
 	move-value: move-value - change-value
 ]
