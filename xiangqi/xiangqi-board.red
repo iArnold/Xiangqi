@@ -39,6 +39,7 @@ print [
 #include %xiangqi-convertions.red
 
 ; testvalue
+move-list: copy []
 play-moves: [1 [8x6 4x3 7x5]]
 
 ;-- Initialize board margin and field size ----
