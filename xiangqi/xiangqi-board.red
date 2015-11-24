@@ -113,7 +113,7 @@ image-actors: object [
 ;				mydestinations: [8x5 4x2 7x4]
 				mydestinations: select play-moves 1
 				
-				hints-block: copy [pen red fill-pen 255.0.0.50 ]
+				hints-block: copy [pen 255.0.0 fill-pen 255.0.0.50 ]
 				foreach dest mydestinations [
 					place: dest * 40 + 20x20
 					append hints-block 'circle
@@ -282,7 +282,7 @@ win/pane: reduce [
 ; Start drawing board on the canvas
 canvas/draw: [
 	line-cap round
-	pen black
+	pen 0.0.0
 ]
 
 ; Initialize board margin and field size
@@ -350,8 +350,7 @@ dot-size: 4
 p1/1: p1/2: margin-board
 
 append canvas/draw [
-	pen black
-	fill-pen black
+	fill-pen 0.0.0
 ]
 
 board-dots: [
