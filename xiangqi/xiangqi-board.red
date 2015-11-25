@@ -38,10 +38,6 @@ print [
 ; Notation conversion and conversion between board and screen values of fields
 #include %xiangqi-convertions.red
 
-; testvalue
-move-list: copy []
-play-moves: [1 [8x6 4x3 7x5]]
-
 ;-- Initialize board margin and field size ----
 
 margin-board: margin-x: margin-y: 20
@@ -65,6 +61,15 @@ correction-offset: correction-offset + 100x100
 
 ; 
 drag-saved-offset: 0x0
+
+; testvalue
+move-list: copy []
+play-moves: [1 [8x6 4x3 7x5]]
+play-board: copy start-board
+move-list: make-move-list play-board 0
+play-moves: display-moves-list move-list
+probe play-moves
+;play-moves: [1 [8x6 4x3 7x5]]
 
 ; Simple declaration of all pieces needed for compilation
 white-king: 
@@ -110,9 +115,11 @@ image-actors: object [
 				hints-canvas/draw: copy []
 			][
 				print face/offset
-;				mydestinations: [8x5 4x2 7x4]
-				mydestinations: select play-moves 1
-				
+				mydestinations: [8x5 4x2 7x4]
+;				mydestinations: select play-moves 1
+				probe play-moves
+				probe mydestinations
+;				hints-block: copy [pen red fill-pen 255.0.0.50 ]
 				hints-block: copy [pen 255.0.0 fill-pen 255.0.0.50 ]
 				foreach dest mydestinations [
 					place: dest * 40 + 20x20
@@ -182,32 +189,68 @@ make-piece-faces: does [
 		; declare piece image
 		declare-piece: copy []
 		declare-piece-string: copy ""
+
 		append declare-piece-string p
-		append declare-piece-string {: make face! [
-	type: 'base offset: }
-		piece-offset: o * field-size + correction-offset
-		append declare-piece-string piece-offset
-		append declare-piece-string " size: "
+		append declare-piece-string ": make face! ["
+		append declare-piece-string newline
+		append declare-piece-string "type: 'base offset: "
+
+		print "Before calculating piece-offset"
+		print declare-piece-string
+	
+		piece-offset: o * field-size 
+		piece-offset: piece-offset + correction-offset
+;		print "piece offset is now"
+		print [type? piece-offset piece-offset o piece-offset/1 piece-offset/2]
+
+		xco: piece-offset/1
+		yco: piece-offset/2
+
+		print "After calculating piece-offset"
+		print declare-piece-string
+		
+		helper-string: copy " "
+		append helper-string xco
+		append helper-string copy "TRALALA"
+		append helper-string yco
+		append helper-string " size: "
+		replace helper-string "TRALALA" "x"
+		print helper-string
+		print declare-piece-string
+		append declare-piece-string helper-string
+		print "declaring:"
+		
+		;append declare-piece-string xco
+		;append declare-piece-string copy "x"
+		;append declare-piece-string yco
+		;append declare-piece-string " size: "
 		append declare-piece-string image-format
-		append declare-piece-string {
-	image: load %}
+		append declare-piece-string newline
+		append declare-piece-string "image: load %"
 		append declare-piece-string image-path 
 		append declare-piece-string "Xiangqi_"
 		append declare-piece-string t
 		append declare-piece-string "_"
 		append declare-piece-string a
 		append declare-piece-string c
-		append declare-piece-string {.png
-}
-		append declare-piece-string {
-	options: [drag-on: 'down]
-	id: "}
+		append declare-piece-string ".png"
+		append declare-piece-string newline
+		append declare-piece-string "	options: [drag-on: 'down]"
+		append declare-piece-string newline
+		append declare-piece-string {	id: "}
 		append declare-piece-string i
-		append declare-piece-string {"
-	actors: image-actors
-]}
+		append declare-piece-string {"}
+		append declare-piece-string newline
+		append declare-piece-string "	actors: image-actors"
+		append declare-piece-string newline
+		append declare-piece-string "]"
+		
+		print declare-piece-string 
+		
+		; perform the declaration 		
 		declare-piece: load declare-piece-string
 		do declare-piece		
+
 	]	; end foreach piece
 ]
 
@@ -282,6 +325,7 @@ win/pane: reduce [
 ; Start drawing board on the canvas
 canvas/draw: [
 	line-cap round
+;	pen black
 	pen 0.0.0
 ]
 
@@ -350,6 +394,9 @@ dot-size: 4
 p1/1: p1/2: margin-board
 
 append canvas/draw [
+;	pen black
+;	fill-pen black
+;	pen 0.0.0
 	fill-pen 0.0.0
 ]
 
@@ -397,5 +444,5 @@ foreach [p2 p3] river-points [
 ; board is ready
 
 ; show window
-dump-face win
+;dump-face win
 view win
