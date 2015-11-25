@@ -10,41 +10,30 @@ Red [
 ;**************************************************
 
 ; return x, y coordinates from fieldnumber
-start-position-h: start-position-v: 80 ; 80 pixels?
-field-size: 100 	                 ; 100 pixels?
+#import %xiangqi-convertions-common.red
 
+; Red supports the pair! type since version 0.6.0
 field-to-xy: function [
 	field [integer!]
-	return: [block!]
-	/local line row x y
+	return: [pair!]
+	/local 
+	out [pair!]
 ][
+	out: -1x-1
 	if any [field < 1
-			field > 90][return reduce [0 0] ]
-	line: ( field - 1 ) / 10
-	row: 9 - remainder (field - 1) 10
-	x: start-position-h + (line * field-size)
-	y: start-position-v + (row  * field-size)
-	reduce [x y]
+			field > 90][return out ]
+	out/1: ( field - 1 ) / 10
+	out/2: 9 - remainder (field - 1) 10
+	out
 ]
 
-; return fieldnumber from x, y coordinates
+; return fieldnumber from x, y fieldcoordinates
 xy-to-field: function [
-	x [integer!]
-	y [integer!]
+	xy [pair!]
 	return: [integer!]
-	/local row line field
+	/local field
 ][
-	row:  y - start-position-v
-	line: x - start-position-h
-	;print [" x" x "y" y "line" line "row" row]
-	if any [row < 0
-			line < 0][return 0]
-	line: 1 + (line / field-size)
-	row:  10 - (row / field-size)
-	;print [" x" x "y" y "line" line "row" row]
-	if any [row > 10
-			line > 9][return 0]
-	field: (line - 1) * 10 + row
+	field: xy/2 * 10 + 10 - xy/1 
 ]
 
 ; When a player selects a field, and there is a piece on this field,
@@ -65,7 +54,7 @@ display-moves-list: function [
 	
 	if 1 > length? move-list [ return copy [] ]
 	foreach move move-list [
-		if previous-piece <> move/2 [ ; new startfield
+		if previous-piece <> move/2 [ ; new piece
 			if 0 < previous-piece [ ; not first to prevent an empty block at beginning
 				display-list: append display-list previous-piece
 				display-list: append/only display-list dest-block
@@ -74,25 +63,13 @@ display-moves-list: function [
 			dest-block: copy []
 			previous-piece: move/2
 		]
-		dest-block: append dest-block move/3
+		; Append the xy coordinate of the field to the destinations
+		; not the destination field number to save recalculating every time
+		dest-block: append dest-block field-to-xy move/3
 	]
 	; add the last info too
-	display-list: append display-list move/2
+	display-list: append display-list move/1
 	display-list: append/only display-list dest-block
-]
-
-field-to-offset: function [
-	"Fieldnumber to offset for display field highlighting"
-	field [integer!]
-	return: [pair!]
-	/local 
-	p [pair!]
-][
-	p: 0x0
-	field: field - 1
-	p/2: field / 10
-	p/1: 9 - (remainder field 10)
-	p
 ]
 
 ;***************************

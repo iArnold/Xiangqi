@@ -41,6 +41,10 @@ print [
 ;-- Initialize board margin and field size ----
 
 margin-board: margin-x: margin-y: 20
+margins: 0x0
+margins/1: margin-x
+margins/2: margin-y
+
 field-size: field-width: field-height: 40
 
 image-size: 30
@@ -57,7 +61,8 @@ image-format/1: image-format/2: image-size
 
 correction-offset: 0x0
 correction-offset/1: correction-offset/2: margin-board - half-size
-correction-offset: correction-offset + 100x100
+canvas-offset: 100x100
+correction-offset: correction-offset + canvas-offset
 
 ; 
 drag-saved-offset: 0x0
@@ -65,16 +70,30 @@ drag-saved-offset: 0x0
 ; testvalue
 move-list: copy []
 play-board: copy start-board
-;move-list: make-move-list play-board 0
-;play-moves: display-moves-list move-list
-play-moves: [1 [0x8 0x7] 4 [0x5] 11 [0x7 2x7] 
-13 [0x7 2x7 3x7 4x7 5x7 6x7 1x6 1x5 1x4 1x3 1x0 1x8] 
-21 [0x7 4x7] 24 [2x5] 31 [4x8] 41 [4x8] 44 [4x5] 51 [4x8] 
-61 [4x7 8x7] 64 [6x5] 71 [6x7 8x7] 
-73 [6x7 5x7 4x7 3x7 2x7 8x7 7x6 7x5 7x4 7x3 7x0 7x8] 
-81 [8x8 8x7] 2 [8x5]
+move-list: make-move-list play-board 0
+play-moves: display-moves-list move-list
+;play-moves: [1 [0x8 0x7] 4 [0x5] 11 [0x7 2x7] 
+;13 [0x7 2x7 3x7 4x7 5x7 6x7 1x6 1x5 1x4 1x3 1x0 1x8] 
+;21 [0x7 4x7] 24 [2x5] 31 [4x8] 41 [4x8] 44 [4x5] 51 [4x8] 
+;61 [4x7 8x7] 64 [6x5] 71 [6x7 8x7] 
+;73 [6x7 5x7 4x7 3x7 2x7 8x7 7x6 7x5 7x4 7x3 7x0 7x8] 
+;81 [8x8 8x7] 2 [8x5]
+;]
+;probe play-moves
+
+; function to go from face/offset to x y coordinates.
+face-offset-to-xy: func [
+	in [pair!]
+	window-offset [pair!]
+	return: [pair!]
+	/local out [pair!]
+	
+][
+	out: in - window-offset - canvas-offset - margins
+	out/1: out/1 / field-height
+	out/2: out/2 / field-width
+	out
 ]
-probe play-moves
 
 ; Simple declaration of all pieces needed for compilation
 white-king: 
