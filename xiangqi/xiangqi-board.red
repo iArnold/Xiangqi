@@ -64,12 +64,17 @@ drag-saved-offset: 0x0
 
 ; testvalue
 move-list: copy []
-play-moves: [1 [8x6 4x3 7x5]]
 play-board: copy start-board
-move-list: make-move-list play-board 0
-play-moves: display-moves-list move-list
+;move-list: make-move-list play-board 0
+;play-moves: display-moves-list move-list
+play-moves: [1 [0x8 0x7] 4 [0x5] 11 [0x7 2x7] 
+13 [0x7 2x7 3x7 4x7 5x7 6x7 1x6 1x5 1x4 1x3 1x0 1x8] 
+21 [0x7 4x7] 24 [2x5] 31 [4x8] 41 [4x8] 44 [4x5] 51 [4x8] 
+61 [4x7 8x7] 64 [6x5] 71 [6x7 8x7] 
+73 [6x7 5x7 4x7 3x7 2x7 8x7 7x6 7x5 7x4 7x3 7x0 7x8] 
+81 [8x8 8x7] 2 [8x5]
+]
 probe play-moves
-;play-moves: [1 [8x6 4x3 7x5]]
 
 ; Simple declaration of all pieces needed for compilation
 white-king: 
@@ -115,8 +120,8 @@ image-actors: object [
 				hints-canvas/draw: copy []
 			][
 				print face/offset
-				mydestinations: [8x5 4x2 7x4]
-;				mydestinations: select play-moves 1
+;				mydestinations: [8x5 4x2 7x4]
+				mydestinations: select play-moves 13
 				probe play-moves
 				probe mydestinations
 ;				hints-block: copy [pen red fill-pen 255.0.0.50 ]
@@ -184,7 +189,14 @@ all-pieces: [
 
 image-path: %images/
 
-make-piece-faces: does [
+make-piece-faces: func [
+	/local 
+		declare-piece [block!]
+		declare-piece-string [string!]
+		p [string!] i [string!] t [string!] a [string!] c [string!]
+		o [pair!]
+		piece-offset [pair!]
+][
 	foreach [p i o t a c] all-pieces [
 		; declare piece image
 		declare-piece: copy []
@@ -195,35 +207,12 @@ make-piece-faces: does [
 		append declare-piece-string newline
 		append declare-piece-string "type: 'base offset: "
 
-		print "Before calculating piece-offset"
-		print declare-piece-string
-	
-		piece-offset: o * field-size 
-		piece-offset: piece-offset + correction-offset
-;		print "piece offset is now"
-		print [type? piece-offset piece-offset o piece-offset/1 piece-offset/2]
+		piece-offset: 0x0
+		piece-offset/1: o/1 * field-size + correction-offset/1
+		piece-offset/2: o/2 * field-size + correction-offset/2
 
-		xco: piece-offset/1
-		yco: piece-offset/2
-
-		print "After calculating piece-offset"
-		print declare-piece-string
-		
-		helper-string: copy " "
-		append helper-string xco
-		append helper-string copy "TRALALA"
-		append helper-string yco
-		append helper-string " size: "
-		replace helper-string "TRALALA" "x"
-		print helper-string
-		print declare-piece-string
-		append declare-piece-string helper-string
-		print "declaring:"
-		
-		;append declare-piece-string xco
-		;append declare-piece-string copy "x"
-		;append declare-piece-string yco
-		;append declare-piece-string " size: "
+		append declare-piece-string piece-offset	
+		append declare-piece-string " size: "
 		append declare-piece-string image-format
 		append declare-piece-string newline
 		append declare-piece-string "image: load %"
