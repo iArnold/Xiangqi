@@ -78,7 +78,6 @@ face-offset-to-xy: func [
 	in [pair!]
 	return: [pair!]
 	/local out [pair!]
-	
 ][
 	out: in - win/offset - canvas/offset - margins + half-field
 	out/1: out/1 / field-height
@@ -122,7 +121,6 @@ black-pawn-4:
 black-pawn-5: make face! []
 
 ;-- actors
-;mydestinations: none
 
 image-actors: object [
 		on-over: function [face [object!] event [event!]][
@@ -138,28 +136,29 @@ image-actors: object [
 ;					if any [0 > fotxy/1
 ;							0 > fotxy/2
 ;							8 < fotxy/1
-;							9 < fotxy/2 ][
-					mydestinations: select play-moves fotxy-field
-;					probe play-moves
-;					probe mydestinations
-					face/dest: mydestinations
-					if not empty? mydestinations [
-;						hints-block: copy [pen red fill-pen 255.0.0.50 ]
-						hints-block: copy [pen 255.0.0 fill-pen 255.0.0.50 ]
-						foreach dest mydestinations [
-							place: dest * 40 + 20x20
-							append hints-block 'circle
-							append hints-block place
-							append hints-block 20
+;							9 < fotxy/2 ][ ;-- do not test drops off board yet
+						mydestinations: select play-moves fotxy-field
+;						probe play-moves
+;						probe mydestinations
+						face/dest: mydestinations
+						if not empty? mydestinations [
+;							hints-block: copy [pen red fill-pen 255.0.0.50 ]
+							hints-block: copy [pen 255.0.0 fill-pen 255.0.0.50 ]
+							foreach dest mydestinations [
+								place: dest * 40 + 20x20
+								append hints-block 'circle
+								append hints-block place
+								append hints-block 20
+							]
+							probe hints-block
+							hints-canvas/draw: copy hints-block
+							show hints-canvas
 						]
-						probe hints-block
-						hints-canvas/draw: copy hints-block
-						show hints-canvas
-					]
+;					]
 				]
 			]
-
 		]
+		
 		on-drag-start: func [face [object!] event [event!]][
 			print ["drag starts at" event/offset face/offset]
 ;			print ["window offset is" win/offset]
@@ -169,6 +168,7 @@ image-actors: object [
 			drag-saved-offset: face/offset
 			face/drag: true
 		]
+		
 		on-drop: function [face [object!] event [event!]][
 			print ["dropping" event/offset face/offset]
 			print ["window offset is" win/offset]
@@ -184,10 +184,10 @@ image-actors: object [
 					face/offset: drag-saved-offset
 				]
 			]
-			
 			face/drag: false
 			hints-canvas/draw: copy []
 		]
+		
 ]
 
 ; Pieces to be placed on the canvas
