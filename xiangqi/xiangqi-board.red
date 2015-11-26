@@ -178,9 +178,10 @@ image-actors: object [
 			][
 ;				probe face/dest
 				either found? find face/dest drop-fotxy [
-				
+					drop-fotxy: drop-fotxy * field-width
+					face/offset: win/offset + canvas/offset + margins + drop-fotxy - half-image-size
 				][
-				
+					face/offset: drag-saved-offset
 				]
 			]
 			
