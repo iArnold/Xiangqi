@@ -37,6 +37,7 @@ print [
 
 ; Notation conversion and conversion between board and screen values of fields
 #include %xiangqi-convertions.red
+#include %utils/red-found.red
 
 ;-- Initialize board margin and field size ----
 
@@ -66,30 +67,23 @@ correction-offset: correction-offset + canvas-offset
 
 ; 
 drag-saved-offset: 0x0
+;drag-active: false
 
 ; testvalue
 move-list: copy []
 play-board: copy start-board
 move-list: make-move-list play-board 0
+probe move-list
 play-moves: display-moves-list move-list
-;play-moves: [1 [0x8 0x7] 4 [0x5] 11 [0x7 2x7] 
-;13 [0x7 2x7 3x7 4x7 5x7 6x7 1x6 1x5 1x4 1x3 1x0 1x8] 
-;21 [0x7 4x7] 24 [2x5] 31 [4x8] 41 [4x8] 44 [4x5] 51 [4x8] 
-;61 [4x7 8x7] 64 [6x5] 71 [6x7 8x7] 
-;73 [6x7 5x7 4x7 3x7 2x7 8x7 7x6 7x5 7x4 7x3 7x0 7x8] 
-;81 [8x8 8x7] 2 [8x5]
-;]
-;probe play-moves
 
 ; function to go from face/offset to x y coordinates.
 face-offset-to-xy: func [
 	in [pair!]
-	window-offset [pair!]
 	return: [pair!]
 	/local out [pair!]
 	
 ][
-	out: in - window-offset - canvas-offset - margins
+	out: in - win/offset - canvas/offset - margins + half-field
 	out/1: out/1 / field-height
 	out/2: out/2 / field-width
 	out
@@ -131,40 +125,70 @@ black-pawn-4:
 black-pawn-5: make face! []
 
 ;-- actors
+;mydestinations: none
 
 image-actors: object [
 		on-over: function [face [object!] event [event!]][
-			;print ["Event over" event/offset event/away?]
-			either event/away? [
-				hints-canvas/draw: copy []
-			][
-				print face/offset
-;				mydestinations: [8x5 4x2 7x4]
-				mydestinations: select play-moves 13
-				probe play-moves
-				probe mydestinations
-;				hints-block: copy [pen red fill-pen 255.0.0.50 ]
-				hints-block: copy [pen 255.0.0 fill-pen 255.0.0.50 ]
-				foreach dest mydestinations [
-					place: dest * 40 + 20x20
-					append hints-block 'circle
-					append hints-block place
-					append hints-block 20
+;			print ["Event over" event/offset event/away?]
+			if not face/drag [  ;do not recompute when dragging a piece around
+				either event/away? [
+					hints-canvas/draw: copy []
+				][
+					fotxy: face-offset-to-xy face/offset
+;					print ["Face offset computes to fieldcoordinates" fotxy]
+					fotxy-field: xy-to-field fotxy
+					print ["selected-field" fotxy-field]
+;					if any [0 > fotxy/1
+;							0 > fotxy/2
+;							8 < fotxy/1
+;							9 < fotxy/2 ][
+					mydestinations: select play-moves fotxy-field
+;					probe play-moves
+;					probe mydestinations
+					face/dest: mydestinations
+					if not empty? mydestinations [
+;						hints-block: copy [pen red fill-pen 255.0.0.50 ]
+						hints-block: copy [pen 255.0.0 fill-pen 255.0.0.50 ]
+						foreach dest mydestinations [
+							place: dest * 40 + 20x20
+							append hints-block 'circle
+							append hints-block place
+							append hints-block 20
+						]
+						probe hints-block
+						hints-canvas/draw: copy hints-block
+						show hints-canvas
+					]
 				]
-				probe hints-block
-				hints-canvas/draw: copy hints-block
-				show hints-canvas
 			]
+
 		]
 		on-drag-start: func [face [object!] event [event!]][
 			print ["drag starts at" event/offset face/offset]
-			print ["window offset is" win/offset]
+;			print ["window offset is" win/offset]
+;			print ["face   offset is" face/offset]
+;			print ["canvas offset is" canvas/offset "margins is " margins "half-field is " half-field]
+;			print face-offset-to-xy face/offset ;-- win/offset
 			drag-saved-offset: face/offset
+			face/drag: true
 		]
 		on-drop: function [face [object!] event [event!]][
 			print ["dropping" event/offset face/offset]
 			print ["window offset is" win/offset]
-			face/offset: drag-saved-offset
+			print drop-fotxy: face-offset-to-xy face/offset ;-- win/offset
+			either empty? face/dest [
+				face/offset: drag-saved-offset
+			][
+;				probe face/dest
+				either found? find face/dest drop-fotxy [
+				
+				][
+				
+				]
+			]
+			
+			face/drag: false
+			hints-canvas/draw: copy []
 		]
 ]
 
@@ -251,9 +275,9 @@ make-piece-faces: func [
 		append declare-piece-string newline
 		append declare-piece-string "	actors: image-actors"
 		append declare-piece-string newline
-		append declare-piece-string "]"
+		append declare-piece-string " dest: copy [] drag: false ]"
 		
-		print declare-piece-string 
+;		print declare-piece-string 
 		
 		; perform the declaration 		
 		declare-piece: load declare-piece-string
@@ -336,11 +360,6 @@ canvas/draw: [
 ;	pen black
 	pen 0.0.0
 ]
-
-; Initialize board margin and field size
-margin-board: margin-x: margin-y: 20
-field-size: field-width: field-height: 40
-image-size: 30
 
 ; Set canvas size (360x400)
 canvas/size/1: 2 * margin-board + ( 8 * field-size )

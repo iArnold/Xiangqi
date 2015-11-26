@@ -2,8 +2,8 @@ Red [
 	"Conversions for GUI and notation for Xiangqi aka Chinese Chess"
 	filename: %xiangqi-convertions.red
 	author:   "Arnold van Hofwegen"
-	version:  0.2
-	date:     "12-Jun-2015"
+	version:  0.6.0
+	date:     "26-Nov-2015"
 ]
 ;**************************************************
 ; Routines for helping with GUI and I/O interaction
@@ -33,7 +33,7 @@ xy-to-field: function [
 	return: [integer!]
 	/local field
 ][
-	field: xy/2 * 10 + 10 - xy/1 
+	field: xy/1 * 10 + 10 - xy/2 
 ]
 
 ; When a player selects a field, and there is a piece on this field,
@@ -68,7 +68,7 @@ display-moves-list: function [
 		dest-block: append dest-block field-to-xy move/3
 	]
 	; add the last info too
-	display-list: append display-list move/1
+	display-list: append display-list move/2
 	display-list: append/only display-list dest-block
 ]
 
