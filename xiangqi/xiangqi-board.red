@@ -46,28 +46,25 @@ margins: 0x0
 margins/1: margin-x
 margins/2: margin-y
 
-field-size: field-width: field-height: 40
+field-width: field-height: 40
 
-image-size: 30
-half-size: image-size / 2
-
-half-offset: 0x0
-half-offset/1: half-offset/2: half-size
+image-height: image-width: 30
+image-size: 0x0
+image-size/1: image-width
+image-size/2: image-height
+half-image-size: image-size / 2
 
 half-field: 0x0
-half-field/1: half-field/2: field-size / 2
-
-image-format: 0x0
-image-format/1: image-format/2: image-size
+half-field/1:  field-width / 2
+half-field/2: field-heigth / 2
 
 correction-offset: 0x0
-correction-offset/1: correction-offset/2: margin-board - half-size
+correction-offset/1: correction-offset/2: margin-board
 canvas-offset: 100x100
-correction-offset: correction-offset + canvas-offset
+correction-offset: correction-offset + canvas-offset - half-image-size
 
 ; 
 drag-saved-offset: 0x0
-;drag-active: false
 
 ; testvalue
 move-list: copy []
@@ -251,8 +248,8 @@ make-piece-faces: func [
 		append declare-piece-string "type: 'base offset: "
 
 		piece-offset: 0x0
-		piece-offset/1: o/1 * field-size + correction-offset/1
-		piece-offset/2: o/2 * field-size + correction-offset/2
+		piece-offset/1: o/1 * field-width  + correction-offset/1
+		piece-offset/2: o/2 * field-height + correction-offset/2
 
 		append declare-piece-string piece-offset	
 		append declare-piece-string " size: "
@@ -357,29 +354,28 @@ win/pane: reduce [
 ; Start drawing board on the canvas
 canvas/draw: [
 	line-cap round
-;	pen black
-	pen 0.0.0
+	pen black
 ]
 
 ; Set canvas size (360x400)
-canvas/size/1: 2 * margin-board + ( 8 * field-size )
-canvas/size/2: 2 * margin-board + ( 9 * field-size )
+canvas/size/1: 2 * margin-board + ( 8 * field-width )
+canvas/size/2: 2 * margin-board + ( 9 * field-height )
 
 ; Draw outline
 p1: p2: p3: p4: 0x0
 p1/1: p1/2: p2/2: p4/1: margin-board
-p2/1: p3/1: 8 * field-size + margin-board
-p3/2: p4/2: 9 * field-size + margin-board
+p2/1: p3/1: 8 * field-width  + margin-board
+p3/2: p4/2: 9 * field-height + margin-board
 
 append canvas/draw reduce ['line p1 p2 p3 p4 p1] 
 
 ; Draw top vertical lines
 p1: p2: 0x0
 p1/2: margin-board
-p2/2: field-size * 4 + margin-board 
+p2/2: field-height * 4 + margin-board 
 
 repeat count 7 [
-	vert: count * field-size + margin-board
+	vert: count * field-height + margin-board
 	p1/1: vert
 	p2/1: vert
 	append canvas/draw reduce ['line p1 p2] 
@@ -387,11 +383,11 @@ repeat count 7 [
 
 ; Draw bottom vertical lines
 p1: p2: 0x0
-p1/2: 5 * field-size + margin-board ; 220
-p2/2: 9 * field-size + margin-board ; 380
+p1/2: 5 * field-height + margin-board ; 220
+p2/2: 9 * field-height + margin-board ; 380
 
 repeat count 7 [
-	vert: count * field-size + margin-board
+	vert: count * field-height + margin-board
 	p1/1: vert
 	p2/1: vert
 	append canvas/draw reduce ['line p1 p2] 
@@ -400,17 +396,17 @@ repeat count 7 [
 ; Draw horizontal lines
 p1: p2: 0x0
 p1/1: margin-board
-p2/1: field-size * 8 + margin-board
+p2/1: field-width * 8 + margin-board
 
 repeat count 3 [
-	vert: count * field-size + margin-board
+	vert: count * field-height + margin-board
 	p1/2: vert
 	p2/2: vert
 	append canvas/draw reduce ['line p1 p2] 
 ]
 ; We skip the river, this is done later in blue
 repeat count 3 [
-	vert: count + 5 * field-size + margin-board ; count + 5 is calculated first!
+	vert: count + 5 * field-height + margin-board ;-- count + 5 is calculated first!
 	p1/2: vert
 	p2/2: vert
 	append canvas/draw reduce ['line p1 p2] 
@@ -421,10 +417,7 @@ dot-size: 4
 p1/1: p1/2: margin-board
 
 append canvas/draw [
-;	pen black
-;	fill-pen black
-;	pen 0.0.0
-	fill-pen 0.0.0
+	fill-pen black
 ]
 
 board-dots: [
@@ -434,7 +427,7 @@ board-dots: [
 
 foreach board-dot board-dots [
 	append canvas/draw reduce [
-		'circle board-dot * field-size + p1 dot-size
+		'circle board-dot * field-width + p1 dot-size
 	]
 ]
 
@@ -448,7 +441,7 @@ cross-points: [
 
 foreach [p2 p3] cross-points [
 	append canvas/draw reduce [
-		'line p2 * field-size + p1 p3 * field-size + p1
+		'line p2 * field-width + p1 p3 * field-width + p1
 	]
 ]
 
@@ -464,7 +457,7 @@ river-points: [
 
 foreach [p2 p3] river-points [
 	append canvas/draw reduce [
-		'line p2 * field-size + p1 p3 * field-size + p1
+		'line p2 * field-width + p1 p3 * field-width + p1
 	]
 ]
 

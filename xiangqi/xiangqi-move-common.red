@@ -99,7 +99,7 @@ get-field-king: function [
 	/local field [integer!]
 ][
 	field: 0
-	either color = RED [ ; find the red king in his palace
+	either color = RED-0 [ ; find the red king in his palace
 		foreach i red-palace [
 			if 128 = in-board/:i [
 				field: i

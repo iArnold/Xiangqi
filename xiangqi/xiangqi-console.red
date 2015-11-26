@@ -46,11 +46,11 @@ in-opening-book: true
 
 ; Board, side to play, moves
 ; First make items in 'global' scope
-player-to-move: RED
+player-to-move: RED-0
 move-number: 1
 autoplay: true
 move-history: copy []
-computer-has: BLACK
+computer-has: BLACK-1
 search-depth: 2 ; MAX-DEPTH - 1
 console-board: copy start-board
 inactivity-counter: 0
@@ -60,14 +60,14 @@ show-moves?: true
 ; And set them in the init function
 start-new-game: func [
 ][
-	player-to-move: RED
+	player-to-move: RED-0
 	move-number: 1
 	autoplay: true
 	move-history: copy []
-	computer-has: BLACK
+	computer-has: BLACK-1
 	answer: ask "Do you want to play with Red/White, computer has Blue/Black? (Y/N)"
 	either #"N" = first uppercase answer [
-		computer-has: RED
+		computer-has: RED-0
 		print "You have Blue/Black (Lowercase pieces) and the computer has White/Red."
 	][
 		print "You have White/Red (Uppercase pieces) and the computer has Blue/Black."
@@ -161,7 +161,7 @@ show-moves?: true
 until [
 	move-list: make-move-list console-board player-to-move
 	either 0 = length? move-list [
-		print ["No more legal moves possible for" either RED = player-to-move ["Red"]["Black"]]
+		print ["No more legal moves possible for" either RED-0 = player-to-move ["Red"]["Black"]]
 		print ["It seems that" either player-to-move = computer-has ["you"]["I"] "have won this game!"]
 		raw-answer: ask "Play a new game? (Y/N)"
 		answer: load raw-answer

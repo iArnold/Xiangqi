@@ -13,22 +13,24 @@ Red [
 ; General
 ;********************
 
-;******************************************************
+;**********************************************************
 ; The color representing red/white is 0 black/blue is 1
-;******************************************************
-RED: 0
-BLACK: 1
+; For GUI just RED and BLACK conflicted with the predefined
+; colors (255.0.0 and 0.0.0), so redefined here
+;**********************************************************
+RED-0: 0
+BLACK-1: 1
 
 ;********************
 ; Pieces
 ;********************
-BLACK-PAWN:      BLACK + RED-PAWN:      PAWN:       2
-BLACK-CANON:     BLACK + RED-CANON:     CANON:      4
-BLACK-CHARIOT:   BLACK + RED-CHARIOT:   CHARIOT:    8
-BLACK-KNIGHT:    BLACK + RED-KNIGHT:    KNIGHT:    16
-BLACK-ELEPHANT:  BLACK + RED-ELEPHANT:  ELEPHANT:  32
-BLACK-ADVISOR:   BLACK + RED-ADVISOR:   ADVISOR:   64
-BLACK-KING:      BLACK + RED-KING:      KING:     128
+BLACK-PAWN:      BLACK-1 + RED-PAWN:      PAWN:       2
+BLACK-CANON:     BLACK-1 + RED-CANON:     CANON:      4
+BLACK-CHARIOT:   BLACK-1 + RED-CHARIOT:   CHARIOT:    8
+BLACK-KNIGHT:    BLACK-1 + RED-KNIGHT:    KNIGHT:    16
+BLACK-ELEPHANT:  BLACK-1 + RED-ELEPHANT:  ELEPHANT:  32
+BLACK-ADVISOR:   BLACK-1 + RED-ADVISOR:   ADVISOR:   64
+BLACK-KING:      BLACK-1 + RED-KING:      KING:     128
 ROOK: 8
 
 ;********************

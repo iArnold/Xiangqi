@@ -64,15 +64,15 @@ king-check?: function [
 	field: own-king-pos + (power -1 color)
 	field-value: in-board/:field
 	if all [PAWN = (PAWN and field-value)
-			BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+			BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 	field: own-king-pos + 10
 	field-value: in-board/:field
 	if all [PAWN = (PAWN and field-value)
-			BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+			BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 	field: own-king-pos - 10
 	field-value: in-board/:field
 	if all [PAWN = (PAWN and field-value)
-			BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+			BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 
 	; check for check by horse
 	field: own-king-pos + (power -1 color) + 10
@@ -81,11 +81,11 @@ king-check?: function [
 		field: field + 10
 		field-value: in-board/:field
 		if all [KNIGHT = (KNIGHT and field-value)
-				BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+				BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 		field: field - 10 + (power -1 color)
 		field-value: in-board/:field
 		if all [KNIGHT = (KNIGHT and field-value)
-				BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+				BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 	]
 	field: own-king-pos + (power -1 color) - 10
 	field-value: in-board/:field
@@ -93,11 +93,11 @@ king-check?: function [
 		field: field - 10
 		field-value: in-board/:field
 		if all [KNIGHT = (KNIGHT and field-value)
-				BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+				BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 		field: field + 10 + (power -1 color)
 		field-value: in-board/:field
 		if all [KNIGHT = (KNIGHT and field-value)
-				BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+				BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 	]
 	kings-row: multi-switch own-king-pos [
 		31 41 51 40 50 60 [1]
@@ -110,12 +110,12 @@ king-check?: function [
 			field: field + 10
 			field-value: in-board/:field
 			if all [KNIGHT = (KNIGHT and field-value)
-					BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+					BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 			if 2 < kings-row [
 				field: field - 10 - (power -1 color)
 				field-value: in-board/:field
 				if all [KNIGHT = (KNIGHT and field-value)
-						BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+						BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 			]
 		]
 		field: own-king-pos - (power -1 color) - 10
@@ -123,12 +123,12 @@ king-check?: function [
 			field: field - 10
 			field-value: in-board/:field
 			if all [KNIGHT = (KNIGHT and field-value)
-					BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+					BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 			if 2 < kings-row [
 				field: field + 10 - (power -1 color)
 				field-value: in-board/:field
 				if all [KNIGHT = (KNIGHT and field-value)
-						BLACK = (color xor (BLACK and field-value)) ][either fast [return 1][times-check: times-check + 1]]
+						BLACK-1 = (color xor (BLACK-1 and field-value)) ][either fast [return 1][times-check: times-check + 1]]
 			]
 		]
 	]
@@ -165,7 +165,7 @@ king-check?: function [
 			field-value: in-board/:field
 			if 0 < field-value [
 				either all [ROOK = (ROOK and field-value)
-						BLACK = (color xor (BLACK and field-value)) ][
+						BLACK-1 = (color xor (BLACK-1 and field-value)) ][
 					either fast [return 1][times-check: times-check + 1]
 				][
 					; other type or own color piece, so no check from a rook on this side
@@ -208,7 +208,7 @@ king-check?: function [
 			field-value: in-board/:field
 			if 0 < field-value [
 				either all [CANON = (CANON and field-value)
-						BLACK = (color xor (BLACK and field-value)) ][
+						BLACK-1 = (color xor (BLACK-1 and field-value)) ][
 					if 1 = number-pieces [either fast [return 1][times-check: times-check + 1]]
 				][
 					if 2 = number-pieces [can-find-check: false]

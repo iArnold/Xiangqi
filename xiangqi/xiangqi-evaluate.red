@@ -14,7 +14,7 @@ get-piece-added-value: func [
 	field [integer!]
 	return: [integer!]
 ][  
-	if BLACK = (BLACK and board-piece) [ field: 91 - field ]
+	if BLACK-1 = (BLACK-1 and board-piece) [ field: 91 - field ]
 
 	comment {	; this is how to do with directly valueing the black moves as negative
 				; but probably it is better not to negate here, instead leave that up to the pvs routine.

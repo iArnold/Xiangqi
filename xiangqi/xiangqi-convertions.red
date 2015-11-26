@@ -10,8 +10,6 @@ Red [
 ;**************************************************
 
 ; return x, y coordinates from fieldnumber
-#import %xiangqi-convertions-common.red
-
 ; Red supports the pair! type since version 0.6.0
 field-to-xy: function [
 	field [integer!]
@@ -343,7 +341,7 @@ find-line-with-double-piece: function [
 	; so if we find one, the other will be on the same file
 	; If it is a pawn we need to find both pawns on a file
 	either PAWN = (PAWN and piece) [
-		pawns-on-fields: either 1 = (BLACK and piece)[black-pawns-on][red-pawns-on]
+		pawns-on-fields: either 1 = (BLACK-1 and piece)[black-pawns-on][red-pawns-on]
 		foreach fields pawns-on-fields [
 			count: 0
 			value: value + 1
@@ -441,9 +439,9 @@ notation-to-numbers: function [
 		]
 	; search piece in line
 	
-	next-field: either any[ all [BLACK = (BLACK and piece)
+	next-field: either any[ all [BLACK-1 = (BLACK-1 and piece)
 								#"-" = double]
-							all [BLACK <> (BLACK and piece)
+							all [BLACK-1 <> (BLACK-1 and piece)
 								#"+" = double]][
 					true
 				][
