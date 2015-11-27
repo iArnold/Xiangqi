@@ -56,7 +56,7 @@ half-image-size: image-size / 2
 
 half-field: 0x0
 half-field/1:  field-width / 2
-half-field/2: field-heigth / 2
+half-field/2: field-height / 2
 
 correction-offset: 0x0
 correction-offset/1: correction-offset/2: margin-board
@@ -254,7 +254,7 @@ make-piece-faces: func [
 
 		append declare-piece-string piece-offset	
 		append declare-piece-string " size: "
-		append declare-piece-string image-format
+		append declare-piece-string image-size
 		append declare-piece-string newline
 		append declare-piece-string "image: load %"
 		append declare-piece-string image-path 
