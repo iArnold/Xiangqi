@@ -134,6 +134,7 @@ get-computer-move: func [
 		;computed-move: iterative-deepening-search console-board player-to-move search-depth
 	computer-move: iterative-deepening-search play-board color-to-move search-depth
 	probe computer-move
+	computer-move
 ]
 
 show-hide-piece-face: func [
@@ -161,7 +162,6 @@ show-hide-piece-face: func [
 
 	board-pieces: head board-pieces
 ]
-
 
 gui-play-move: func [
 	move-from [pair!]
@@ -311,6 +311,9 @@ piece-actors: object [
 				either event/away? [
 					hints-canvas/draw: copy []
 				][
+					; Make sure the piece goes over all others
+					bring-piece-to-top first back find board-pieces face/id
+					
 					relative-offset: 0x0
 					relative-offset: face/offset - left-upper-corner/offset - canvas/offset - margins + field-size
 					fotxy: face-offset-to-xy relative-offset
