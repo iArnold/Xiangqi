@@ -3,7 +3,7 @@ Red [
 	filename: %xiangqi-board.red
 	author:   "Arnold van Hofwegen"
 	version:  0.6.0
-	date:     "09-Dec-2015"
+	date:     "10-Dec-2015"
 	Needs: 'View
 ]
 
@@ -26,7 +26,7 @@ print [
 	"build" system/view/platform/build
 ]
 
-; Import some xiangqi programs
+;-- Import some xiangqi programs ----
 
 ; Common definitions
 #include %xiangqi-common.red
@@ -38,6 +38,34 @@ print [
 ; Notation conversion and conversion between board and screen values of fields
 #include %xiangqi-convertions.red
 #include %utils/red-found.red
+
+; Source for determining the best move
+; Position evaluation
+#include %xiangqi-evaluate.red
+
+; Hash calculations 
+#include %xiangqi-hash.red
+
+; Opening book information
+#include %xiangqi-open.red
+
+; Calculate the best move using a PVS like algorithm
+#include %xiangqi-best-move.red
+
+;-- Declare some move variables ----
+move-list:	copy []
+play-board:	copy start-board
+move-list:	make-move-list play-board 0
+play-moves:	display-moves-list move-list
+played-moves-list: copy []
+
+computer-has: BLACK-1
+color-to-move: RED-0
+
+search-depth: 2
+
+; turn on/off opening book
+in-opening-book: true
 
 ;-- Initialize board margin and field size ----
 
@@ -68,23 +96,14 @@ correction-offset: correction-offset + canvas-offset - half-image-size
 
 drag-saved-offset: 0x0
 
-; Move variables
-move-list: copy []
-play-board: copy start-board
-move-list: make-move-list play-board 0
-play-moves: display-moves-list move-list
-played-moves-list: copy []
-
-computer-has: BLACK-1
-move-for-color: RED-0
-
+;-- functions for the buttons ----
 new-game-as: func [
 	player-color [integer!]
 ][
-	move-for-color: RED-0
+	color-to-move: RED-0
 	
 	play-board: copy start-board
-	move-list: make-move-list play-board move-for-color
+	move-list: make-move-list play-board color-to-move
 	play-moves: display-moves-list move-list
 
 	computer-has: either player-color = RED-0 [BLACK-1][RED-0]
@@ -94,6 +113,55 @@ new-game-as: func [
 	;replace all pieces on the board
 	board-pieces: copy all-pieces
 ]
+
+;-- Make sure dragged piece stays over other pieces
+bring-piece-to-top: func [
+	piece-name [string!]
+	/local face-object [object!] 
+][
+	piece-panel/pane: find piece-panel/pane piece-name
+	face-object: first piece-panel/pane
+	remove/part piece-panel/pane 1
+	piece-panel/pane: head piece-panel/pane
+	append piece-panel/pane face-object
+]
+
+get-computer-move: func [
+	/local computer-move [block!]
+][
+	computer-move; copy []
+	; code from console looks like
+		;computed-move: iterative-deepening-search console-board player-to-move search-depth
+	computer-move: iterative-deepening-search play-board color-to-move search-depth
+	probe computer-move
+]
+
+show-hide-piece-face: func [
+	xy-pair [pair!]
+	show? [logic!]
+	/local
+		reset-piece [block!]
+	    reset-piece-string [string!]
+		p [string!] 
+		piece-offset [pair!]
+][
+	board-pieces: head board-pieces
+	board-pieces: find board-pieces xy-pair
+
+	board-pieces: back back board-pieces
+	p: copy first board-pieces
+
+	reset-piece-string: copy ""
+	append reset-piece-string p
+	append reset-piece-string "/size: " 
+	append reset-piece-string either show? [image-size]["0x0"]
+
+	reset-piece: load reset-piece-string
+	do reset-piece
+
+	board-pieces: head board-pieces
+]
+
 
 gui-play-move: func [
 	move-from [pair!]
@@ -128,7 +196,7 @@ gui-play-move: func [
 	play-board/:field-from: 0
 ]
 
-gui-undo-last-move: func [
+gui-undo-one-ply: func [
 	/local move [block!] 
 		dest [integer!] 
 		val  [integer!]
@@ -173,30 +241,17 @@ take-back-move: func [
 ][
 	if 0 = length? played-moves-list [ return 0 ]
 	;undo last move 
-	;gui-undo-last-move
+	;gui-undo-one-ply
 	either 0 < length? played-moves-list [
 		;undo last move 
-		;gui-undo-last-move
+		;gui-undo-one-ply
 	][
 		; if computer is red/white play a new move
 		if RED-0 = computer-has [
 			; compute the best move
-			
 		]
 	]
 	return 0
-]
-
-; function to go from face/offset to x y coordinates.
-face-offset-to-xy: func [
-	in [pair!]
-	return: [pair!]
-	/local out [pair!] xco [integer!] yco [integer!]
-][
-	out: in
-	out/1: out/1 / field-height
-	out/2: out/2 / field-width
-	out
 ]
 
 ; Simple declaration of all pieces needed for compilation, 
@@ -235,9 +290,21 @@ black-pawn-3:
 black-pawn-4:
 black-pawn-5: make face! []
 
+; function to go from face/offset to x y coordinates. Helper function for actors on pieces
+face-offset-to-xy: func [
+	in [pair!]
+	return: [pair!]
+	/local out [pair!] xco [integer!] yco [integer!]
+][
+	out: in
+	out/1: out/1 / field-height
+	out/2: out/2 / field-width
+	out
+]
+
 ;-- actors
 
-image-actors: object [
+piece-actors: object [
 		on-over: function [face [object!] event [event!]][
 ;			print ["Event over" event/offset event/away?]
 			if not face/drag [  ;do not recompute when dragging a piece around
@@ -262,6 +329,7 @@ image-actors: object [
 								append hints-block place
 								append hints-block 20
 							]
+							; for debug purposes
 							;probe hints-block
 							hints-canvas/draw: copy hints-block
 							show hints-canvas
@@ -272,13 +340,13 @@ image-actors: object [
 		]
 		
 		on-drag-start: func [face [object!] event [event!]][
-			;print ["drag starts at" event/offset face/offset]
+;			print ["drag starts at" event/offset face/offset]
 			drag-saved-offset: face/offset
 			face/drag: true
 		]
 		
 		on-drop: function [face [object!] event [event!]][
-			print ["dropping" event/offset face/offset]
+;			print ["dropping" event/offset face/offset]
 			either empty? face/dest [
 				face/offset: drag-saved-offset
 			][
@@ -287,7 +355,6 @@ image-actors: object [
 				
 				either any [0 > relative-offset/1 
 							0 > relative-offset/2][
-					print "Negative piece put back"
 					face/offset: drag-saved-offset
 				][
 					drop-fotxy: face-offset-to-xy relative-offset
@@ -305,10 +372,9 @@ image-actors: object [
 					]
 				]
 			]
-			
+
 			face/drag: false
 			hints-canvas/draw: copy []
-
 		]
 ]
 
@@ -354,43 +420,7 @@ board-pieces: copy all-pieces
 
 image-path: %images/
 
-show-hide-piece-face: func [
-	xy-pair [pair!]
-	show? [logic!]
-	/local
-		reset-piece [block!]
-	    reset-piece-string [string!]
-		p [string!] 
-		piece-offset [pair!]
-][
-	board-pieces: head board-pieces
-	board-pieces: find board-pieces xy-pair
-
-	board-pieces: back back board-pieces
-	p: copy first board-pieces
-
-	reset-piece-string: copy ""
-	append reset-piece-string p
-	append reset-piece-string "/size: " 
-	append reset-piece-string either show? [image-size]["0x0"]
-
-	reset-piece: load reset-piece-string
-	do reset-piece
-
-	board-pieces: head board-pieces
-]
-
-set-piece-on-top: func [
-	piece-name [string!]
-	/local face-object [object!] 
-][
-	piece-panel/pane: find piece-panel/pane piece-name
-	face-object: first piece-panel/pane
-	remove/part piece-panel/pane 1
-	piece-panel/pane: head piece-panel/pane
-	append piece-panel/pane face-object
-]
-
+; not used yet
 set-piece-face: func [
 	xy-pair [pair!]
 	to-pair [pair!]
@@ -424,6 +454,7 @@ set-piece-face: func [
 	board-pieces: head board-pieces
 ]
 
+; not used yet
 reset-pieces-faces: func [
 	/local 
 		reset-piece [block!]
@@ -449,6 +480,7 @@ reset-pieces-faces: func [
 	]
 ]
 
+; Create the face specs dynamically here
 make-piece-faces: func [
 	/local 
 		declare-piece [block!]
@@ -458,7 +490,7 @@ make-piece-faces: func [
 		piece-offset [pair!]
 ][
 	foreach [p i o t a c] board-pieces [
-		; declare piece image
+		; Here we declare piece image and other attributes
 		declare-piece: copy []
 		declare-piece-string: copy ""
 
@@ -472,7 +504,8 @@ make-piece-faces: func [
 		piece-offset: o * field-size + correction-offset
 		append declare-piece-string piece-offset
 
-print ["piece " p " at " piece-offset]
+		; for debug purposes
+		;print ["piece " p " at " piece-offset]
 		append declare-piece-string " size: "
 		append declare-piece-string image-size
 		append declare-piece-string newline
@@ -491,10 +524,11 @@ print ["piece " p " at " piece-offset]
 		append declare-piece-string i
 		append declare-piece-string {"}
 		append declare-piece-string newline
-		append declare-piece-string "	actors: image-actors"
+		append declare-piece-string "	actors: piece-actors"
 		append declare-piece-string newline
 		append declare-piece-string " dest: copy [] drag: false ]"
 		
+		; for debug purposes
 		;print declare-piece-string 
 		
 		; perform the declaration 		
@@ -502,7 +536,9 @@ print ["piece " p " at " piece-offset]
 		do declare-piece		
 
 	]	; end foreach piece
-	print declare-piece-string
+	
+	; for debug purposes
+	;print declare-piece-string
 ]
 
 make-piece-faces 
@@ -594,7 +630,6 @@ win/pane: reduce [
 
 	piece-panel: make face! [
 		type:	'panel
-;		type:	'base
 		offset: 0x0
 		size:	0x0
 		color:  none
@@ -641,14 +676,10 @@ win/pane: reduce [
 canvas/size/1: 2 * margin-board + ( 8 * field-width )
 canvas/size/2: 2 * margin-board + ( 9 * field-height )
 
-; Set the pane size for the piece-panel
-;piece-panel/size: canvas/size + canvas-offset
-
 ; Corrections on canvas offset
 canvas/offset: canvas-offset
 played-move-canvas/offset: canvas-offset
 hints-canvas/offset: canvas-offset
-;piece-panel/offset: canvas-offset
 
 ; Start drawing board on the canvas
 canvas/draw: [
@@ -756,8 +787,8 @@ foreach [p2 p3] river-points [
 		'line p2 * field-width + p1 p3 * field-width + p1
 	]
 ]
+; Drawing the board is finished here
 
-; board is ready
-
+; Now show and run the application
 ;dump-face win
 view win
