@@ -1,7 +1,7 @@
 # Xiangqi
 
-Xiangqi in Red
---------------
+Xiangqi in Red (Version 0.6.0!)
+-------------------------------
 
 The game of Xiangqi programmed using the programming language Red.
 
@@ -26,6 +26,13 @@ chessboard and the code that works on it will be better understandable as a cons
 
 But ultimately because programming using Red is programming with FUN.
 
+Note
+----
+Please be aware of the fact that Red is still in PRE-alpha stage (version 0.6.0) at time 
+of writing this code. Above that, my code is not always the best way of writing Red code.
+The code could be improved for speed, readability, structure, be more Red (REBOL like), 
+my main concern here has been to create a working program that is human readable.
+
 Documentation
 -------------
 
@@ -35,24 +42,41 @@ moves came to be as they are.
 Red version
 -----------
 
-This program was made using the 0.5.4 version of the Red programming language.
+The console program was made using the 0.5.4 version of the Red programming language.
 Therefore also the bindings by Kaj de Vos, included here in the bind folder, are the 
 corresponding files for this Red version also. When updating to a next version of Red, 
 the bindings should be upgraded as well. The original bindings by Kaj de Vos can be 
 found here http://red.esperconsultancy.nl/Red-test 
 
+The GUI version of the program, xiangqi-board.red, is made with the development version 
+of Red 0.6.0.
+Bad news, good news follows now. The GUI is only for Windows. The good news is Red
+language is also aiming to target all kinds of other platforms too in a native way.
+If you want to help get Red have a GUI on your favorite platform, please feel free to 
+do so.
+
 Compiling this program
 ----------------------
 
-To compile this program, you will need the sourcecode, a Rebol (core) program for your 
+To compile this program, you will need the sourcecode, a Rebol (View) program for your 
 computer and the Red sources. You can find very specific information how to compile Red
 programs on the Github site of Red here: https://github.com/red/red
-In short it is start your Rebol core program, change directory to the Red source folder 
+In short it is start your Rebol View program, go to the console and change directory 
+to the Red source folder 
 	cd red
 and do
 	do %red.r
 	rc %../xiangqi/xiangqi/xiangqi-console.red
 And Red will create your program in the Red folder.
+
+Compiling the GUI version is done by
+	rc %../xiangqi/xiangqi/xiangqi-board.red
+You will notice this opens a command window as well. This is handy for trying out 
+improvements, it will show all print and probe debugging helper commands you have put 
+inside your changed code.
+If you do not want such a command window to appear you compile using
+	do/args %red.r "-c -t Windows %../xiangqi/xiangqi/xiangqi-console.red"
+
 
 Testprograms
 ------------
@@ -63,25 +87,30 @@ What is there to be done?
 -------------------------
 
 A lot! 
-    The program needs much more testing than I have already done. 
-    Add list for played moves.
-    Undo functionality for moves.
-    Show the best variant considered.
-    Making use of computed hashes for each position to save time on computing a position
-        that was already done, when a different order of moves was played. 
-    Better evaluation by making use of influence data and pins.
-    Making use of different fail hard and fail soft mechanisms.
-    Improve quiescence routine to include move that give check.
-    Include rules for draw when repetitive moves are made by the players.
-    Make program compatible to compete against other chess programs.
-    Create a version for the next release of Red.  
-    Make use of general move databases.
-    Check and improve the hash used. I have the idea that the hash code can be shortened,
-        but I am not 100% sure about that.
-    Add file I/O to export played games and import new positions. (Wait for Red I/O).
+
+
+        The program needs much more testing than I have already done. 
+        Add list for played moves.
+        Undo functionality for moves.
+        Show the best variant considered.
+        Making use of computed hashes for each position to save time on computing a position
+            that was already done, when a different order of moves was played. 
+            This can make a HUGE improvement in speed!
+        Better evaluation by making use of influence data and pins.
+        Making use of different fail hard and fail soft mechanisms.
+        Improve quiescence routine to include moves that give check.
+        Include rules for draw when repetitive moves are made by the players.
+        Make program compatible to compete against other chess programs.
+        Create a version for the next release of Red. 
+        Make more use of faster Red/System routines.
+        Make use of general move databases.
+        Check and improve the hash used. I have the idea that the hash code can be shortened,
+            but I am not 100% sure about that. (Only partly possible.)
+        Add file I/O to export played games and import new positions. (Wait for Red I/O).
 	
-Please do not count too much on me to fill in all the blancs here. I never played an 
-actual game of Xiangqi in my life! 
+I never played an actual game of Xiangqi in my life, yet I made this program. If you like 
+Xiangqi, know just a bit of programming, or like this project, please let me know and 
+join in making this program better. 
 
 License
 -------------------------

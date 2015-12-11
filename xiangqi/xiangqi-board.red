@@ -112,6 +112,14 @@ new-game-as: func [
 	
 	;replace all pieces on the board
 	board-pieces: copy all-pieces
+	
+	if computer-has = color-to-move [
+		; set message to computing move now
+		;get-computer-move
+		; Play the move on the board
+		; show last move
+		; reset message
+	]
 ]
 
 ;-- Make sure dragged piece stays over other pieces
