@@ -112,13 +112,16 @@ new-game-as: func [
 	
 	;replace all pieces on the board
 	board-pieces: copy all-pieces
+	reset-pieces-faces
 	
 	if computer-has = color-to-move [
 		; set message to computing move now
+		; set move pictogram to computer
 		;get-computer-move
 		; Play the move on the board
 		; show last move
 		; reset message
+		; set move pictogram to player
 	]
 ]
 
@@ -146,28 +149,31 @@ get-computer-move: func [
 ]
 
 show-hide-piece-face: func [
-	xy-pair [pair!]
+	piece-info [string! pair!]
 	show? [logic!]
 	/local
 		reset-piece [block!]
 	    reset-piece-string [string!]
-		p [string!] 
+		piece-name [string!] 
 		piece-offset [pair!]
 ][
 	board-pieces: head board-pieces
-	board-pieces: find board-pieces xy-pair
-
-	board-pieces: back back board-pieces
-	p: copy first board-pieces
-
+	
+	piece-name: either string! = type? piece-info [ ; using id
+		first back find board-pieces piece-info
+	][ ; using location
+		first back back find board-pieces piece-info
+	]
+	
 	reset-piece-string: copy ""
-	append reset-piece-string p
+	append reset-piece-string piece-name
 	append reset-piece-string "/size: " 
 	append reset-piece-string either show? [image-size]["0x0"]
 
 	reset-piece: load reset-piece-string
 	do reset-piece
 
+	; Just to be sure, setting at beginning of the series
 	board-pieces: head board-pieces
 ]
 
@@ -229,17 +235,8 @@ gui-undo-one-ply: func [
 	; size of a captured piece was set to 0x0 and the piece-id (face/id) was saved in the move.
 	; remember later to make move an object, should be cleaner code
 	if 0 < val [
-		; find the piece
-		back find board-pieces move/5
-		piece-name: board-pieces/1
-		
-		reset-piece-string: copy ""
-		append reset-piece-string piece-name
-		append reset-piece-string "/size: " 
-		append reset-piece-string image-size
-
-		reset-piece: load reset-piece-string
-		do reset-piece
+		; show this image 
+		show-hide-piece-face move/5 yes 
 	]
 	; now remove the last move from the list of played moves
 	take/last played-moves-list	
@@ -248,15 +245,15 @@ gui-undo-one-ply: func [
 take-back-move: func [
 ][
 	if 0 = length? played-moves-list [ return 0 ]
-	;undo last move 
-	;gui-undo-one-ply
+	;undo last move by computer
+	gui-undo-one-ply
 	either 0 < length? played-moves-list [
-		;undo last move 
-		;gui-undo-one-ply
+		;undo last move by player
+		gui-undo-one-ply
 	][
 		; if computer is red/white play a new move
 		if RED-0 = computer-has [
-			; compute the best move
+			; compute the best move (again)
 		]
 	]
 	return 0
@@ -431,41 +428,7 @@ board-pieces: copy all-pieces
 
 image-path: %images/
 
-; not used yet
-set-piece-face: func [
-	xy-pair [pair!]
-	to-pair [pair!]
-	/local
-		reset-piece [block!]
-	    reset-piece-string [string!]
-		p [string!] 
-		piece-offset [pair!]
-][
-	board-pieces: head board-pieces
-	board-pieces: find board-pieces xy-pair
-	board-pieces/1: to-pair
-	
-	board-pieces: back back board-pieces
-	p: copy first board-pieces
-
-	reset-piece-string: copy ""
-	append reset-piece-string p
-	piece-offset: 0x0
-	piece-offset: to-pair * field-size + correction-offset
-	append reset-piece-string "/offset: " 
-	append reset-piece-string piece-offset
-
-	append reset-piece-string p
-	append reset-piece-string "/size: " 
-	append reset-piece-string image-size
-
-	reset-piece: load reset-piece-string
-	do reset-piece
-
-	board-pieces: head board-pieces
-]
-
-; not used yet
+; reset the board and place the pieces 
 reset-pieces-faces: func [
 	/local 
 		reset-piece [block!]
@@ -474,7 +437,7 @@ reset-pieces-faces: func [
 		o [pair!]
 		piece-offset [pair!]
 ][
-	board-pieces: copy all-pieces
+	;board-pieces: copy all-pieces
 	foreach [p i o t a c] board-pieces [
 		piece-offset: 0x0
 		piece-offset: o * field-size + correction-offset
