@@ -148,14 +148,16 @@ get-computer-move: func [
 	computer-move
 ]
 
+move-indicator-size: 20x20
+
 change-move-indication: func [
 	to-color [integer!]
 ][
 	either 1 = to-color [
 		red-to-move/size: 0x0
-		black-to-move/size: 20x20
+		black-to-move/size: move-indicator-size
 	][
-		red-to-move/size: 20x20
+		red-to-move/size: move-indicator-size
 		black-to-move/size: 0x0
 	]
 ]
