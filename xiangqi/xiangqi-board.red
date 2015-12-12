@@ -148,6 +148,18 @@ get-computer-move: func [
 	computer-move
 ]
 
+change-move-indication: func [
+	to-color [integer!]
+][
+	either 1 = to-color [
+		red-to-move/size: 0x0
+		black-to-move/size: 20x20
+	][
+		red-to-move/size: 20x20
+		black-to-move/size: 0x0
+	]
+]
+
 show-hide-piece-face: func [
 	piece-info [string! pair!]
 	show? [logic!]
