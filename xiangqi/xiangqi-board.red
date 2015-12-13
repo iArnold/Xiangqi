@@ -98,14 +98,23 @@ drag-saved-offset: 0x0
 
 play-computer-move: func [
 	player-color [integer!]
+	/local 
+		computer-move [block!]
 ][
 	; set message to computing move now
+	set-message computer-has	
 	; set move pictogram to computer
-	;get-computer-move
+	change-move-indication computer-has
+	; compute the move
+	computer-move: get-computer-move
 	; Play the move on the board
+	gui-play-move computer-move/1 computer-move/2
 	; show last move
+	
 	; reset message
+	set-message 1 - computer-has
 	; set move pictogram to player
+	change-move-indication 1 - computer-has
 ]
 
 ;-- functions for the buttons ----
@@ -144,14 +153,26 @@ bring-piece-to-top: func [
 ]
 
 get-computer-move: func [
+	return: [block!]
 	/local computer-move [block!]
+	out [block!]
 ][
 	computer-move; copy []
 	; code from console looks like
 		;computed-move: iterative-deepening-search console-board player-to-move search-depth
 	computer-move: iterative-deepening-search play-board color-to-move search-depth
-	probe computer-move
-	computer-move
+	;probe computer-move
+	; computer move is a block of 2 integers (from opening book) or a 
+	; complete move block with all move information.
+	out: copy [a b]
+	either 2 = length? computer-move [
+		out/1: field-to-xy computer-move/1
+		out/2: field-to-xy computer-move/2
+	][
+		out/1: field-to-xy computer-move/2
+		out/2: field-to-xy computer-move/3
+	]
+	out
 ]
 
 move-indicator-size: 20x20
@@ -165,6 +186,19 @@ change-move-indication: func [
 	][
 		red-to-move/size: move-indicator-size
 		black-to-move/size: 0x0
+	]
+]
+
+text-move-for-computer: "Computing move now..."
+text-move-for-player:   "Your move"
+
+set-message: func [
+	turn [integer!]
+][
+	message-text/text: either turn = computer-has [
+		text-move-for-computer
+	][
+		text-move-for-player
 	]
 ]
 
@@ -197,7 +231,7 @@ show-hide-piece-face: func [
 	board-pieces: head board-pieces
 ]
 
-; not used yet
+; Play the moev
 gui-play-move: func [
 	move-from [pair!]
 	move-to [pair!]
