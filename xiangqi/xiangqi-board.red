@@ -96,6 +96,18 @@ correction-offset: correction-offset + canvas-offset - half-image-size
 
 drag-saved-offset: 0x0
 
+play-computer-move: func [
+	player-color [integer!]
+][
+	; set message to computing move now
+	; set move pictogram to computer
+	;get-computer-move
+	; Play the move on the board
+	; show last move
+	; reset message
+	; set move pictogram to player
+]
+
 ;-- functions for the buttons ----
 new-game-as: func [
 	player-color [integer!]
@@ -115,13 +127,7 @@ new-game-as: func [
 	reset-pieces-faces
 	
 	if computer-has = color-to-move [
-		; set message to computing move now
-		; set move pictogram to computer
-		;get-computer-move
-		; Play the move on the board
-		; show last move
-		; reset message
-		; set move pictogram to player
+		;play-computer-move
 	]
 ]
 
@@ -191,6 +197,7 @@ show-hide-piece-face: func [
 	board-pieces: head board-pieces
 ]
 
+; not used yet
 gui-play-move: func [
 	move-from [pair!]
 	move-to [pair!]
@@ -266,6 +273,7 @@ take-back-move: func [
 		gui-undo-one-ply
 	][
 		; if computer is red/white play a new move
+		change-move-indication RED-0
 		if RED-0 = computer-has [
 			; compute the best move (again)
 		]
@@ -385,9 +393,14 @@ piece-actors: object [
 						face/offset: drag-saved-offset
 					][ 
 						either found? find face/dest drop-fotxy [
+							; here an allowed move was preformed
 							drop-fotxy: drop-fotxy * field-size + half-image-size - half-field
 							; Because win/offset is on the outside of the window, generally a difference of 8x30 or 8x50
 							face/offset: left-upper-corner/offset + margins + drop-fotxy
+							; add players move to the played-move-list
+							; perform the players move on the play-board
+							; and get the return move from the computer
+							;play-computer-move
 						][
 							face/offset: drag-saved-offset
 						]
