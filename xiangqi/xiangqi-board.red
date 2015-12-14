@@ -94,12 +94,16 @@ correction-offset/1: correction-offset/2: margin-board
 canvas-offset: 10x10
 correction-offset: correction-offset + canvas-offset - half-image-size
 
+move-indicator-size: 0x0
+move-indicator-size: half-image-size + 5x5
+
 drag-saved-offset: 0x0
 
 play-computer-move: func [
 	player-color [integer!]
 	/local 
 		computer-move [block!]
+		move-pairs [block!]
 ][
 	; set message to computing move now
 	set-message computer-has	
@@ -107,14 +111,39 @@ play-computer-move: func [
 	change-move-indication computer-has
 	; compute the move
 	computer-move: get-computer-move
-	; Play the move on the board
-	gui-play-move computer-move/1 computer-move/2
+	; Play the move on the GUI, includes add move to the played moves list
+	; and also include play the move on the play-board
+	move-pairs: integer-move-to-GUI-move
+	gui-play-move move-pairs/1 move-pairs/2
 	; show last move
-	
+	played-move-canvas/draw: create-played-move-canvas move-pairs
+	show played-move-canvas
 	; reset message
 	set-message 1 - computer-has
 	; set move pictogram to player
 	change-move-indication 1 - computer-has
+]
+
+create-played-move-canvas: func [
+	move-block [block!]
+	return: [block!]
+	/local pmc [block!]
+	place [pair!]
+][
+	pmc: copy []
+	pmc: copy either RED-0 = computer-has [
+		[pen red fill-pen 255.0.0.50]
+	][
+		[pen blue fill-pen 0.0.255.50]
+	]
+	place: move-block/1 * field-size + margins
+	append pmc 'circle
+	append pmc place
+	append pmc half-image-size/1 + 5
+	place: move-block/2 * field-size + margins
+	append pmc 'circle
+	append pmc place
+	pmc: append pmc half-image-size/1 + 5
 ]
 
 ;-- functions for the buttons ----
@@ -155,27 +184,29 @@ bring-piece-to-top: func [
 get-computer-move: func [
 	return: [block!]
 	/local computer-move [block!]
-	out [block!]
 ][
-	computer-move; copy []
-	; code from console looks like
-		;computed-move: iterative-deepening-search console-board player-to-move search-depth
-	computer-move: iterative-deepening-search play-board color-to-move search-depth
-	;probe computer-move
-	; computer move is a block of 2 integers (from opening book) or a 
+	computer-move: copy []
+	computer-move: iterative-deepening-search play-board computer-has search-depth
+	; computer move is now a block of 2 integers (from opening book) or a 
 	; complete move block with all move information.
-	out: copy [a b]
-	either 2 = length? computer-move [
-		out/1: field-to-xy computer-move/1
-		out/2: field-to-xy computer-move/2
+]
+
+integer-move-to-GUI-move: function [
+	move-block [block!]
+	return: [block!]
+	/local
+		out [block!]
+][
+	out: copy [1 2]
+	either 2 = length? move-block [
+		out/1: field-to-xy move-block/1
+		out/2: field-to-xy move-block/2
 	][
-		out/1: field-to-xy computer-move/2
-		out/2: field-to-xy computer-move/3
+		out/1: field-to-xy move-block/2
+		out/2: field-to-xy move-block/3
 	]
 	out
 ]
-
-move-indicator-size: 20x20
 
 change-move-indication: func [
 	to-color [integer!]
@@ -187,6 +218,8 @@ change-move-indication: func [
 		red-to-move/size: move-indicator-size
 		black-to-move/size: 0x0
 	]
+	show red-to-move
+	show black-to-move
 ]
 
 text-move-for-computer: "Computing move now..."
@@ -200,6 +233,7 @@ set-message: func [
 	][
 		text-move-for-player
 	]
+	show message-text
 ]
 
 show-hide-piece-face: func [
@@ -231,8 +265,41 @@ show-hide-piece-face: func [
 	board-pieces: head board-pieces
 ]
 
-; Play the moev
-gui-play-move: func [
+; Play the move on play-board
+computer-move-on-board: func [
+	field-from [integer!]
+	field-to [integer!]
+	/local 
+		piece [integer!]
+		capture-value [integer!]
+		move [block!]
+		piece-id [string!]
+		move-to [pair!]
+][
+	move-to: field-to-xy field-to
+	piece: play-board/:field-from
+	capture-value: play-board/:field-to
+	move: copy []
+	append move piece
+	append move field-from
+	append move field-to
+	append move capture-value
+	if 0 < capture-value [
+		; get face/id from piece
+		board-pieces: head board-pieces
+		back find board-pieces move-to
+		piece-id: board-pieces/1
+		board-pieces: head board-pieces
+		append move piece-id
+		show-hide-piece-face move-to no ; false means to hide
+	]
+	append/only played-moves-list move
+	play-board/:field-to: piece
+	play-board/:field-from: 0
+]
+
+
+player-move-on-play-board: func [
 	move-from [pair!]
 	move-to [pair!]
 	/local field-from [integer!]
@@ -406,6 +473,8 @@ piece-actors: object [
 		on-drag-start: func [face [object!] event [event!]][
 ;			print ["drag starts at" event/offset face/offset]
 			drag-saved-offset: face/offset
+			; now hide the last move
+			played-move-canvas/draw: copy []
 			face/drag: true
 		]
 		
@@ -433,6 +502,7 @@ piece-actors: object [
 							face/offset: left-upper-corner/offset + margins + drop-fotxy
 							; add players move to the played-move-list
 							; perform the players move on the play-board
+							
 							; and get the return move from the computer
 							;play-computer-move
 						][
