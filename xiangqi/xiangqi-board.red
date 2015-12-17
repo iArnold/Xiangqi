@@ -522,7 +522,8 @@ piece-actors: object [
 			; Make sure the piece goes over all others
 			print [face/id]
 			
-			bring-piece-to-top face-id-to-piece-name face/id
+			;bring-piece-to-top face-id-to-piece-name face/id
+			bring-piece-id-to-top face/id
 		]
 		
 		on-drop: function [face [object!] event [event!]][
@@ -727,8 +728,31 @@ bring-piece-to-top: func [
 		take/part pieces-pane-block 1
 		pieces-pane-block: head pieces-pane-block
 		append pieces-pane-block piece-word
-		piece-panel/pane: reduce pieces-pane-block
-		show piece-panel
+		probe pieces-pane-block
+		print piece-panel/pane/1/id
+		piece-panel/pane: reduce copy pieces-pane-block
+		;show piece-panel
+	]
+]
+
+bring-piece-id-to-top: func [
+	piece-id [string!]
+	/local piece-word [word!] counter [integer!] face-object [object!]
+][
+	print "Bring-piece-id-to-top"
+	if not piece-top-z-order? piece-id [
+		counter: 0
+		until [
+			counter: counter + 1
+			piece-id = piece-panel/pane/:counter/id
+		]
+		print counter
+		face-object: copy piece-panel/pane/:counter
+		print face-object/id
+		take/part skip piece-panel/pane counter 1
+		;piece-panel/pane: head piece-panel/pane
+		append piece-panel/pane face-object
+		set-piece-top-z-order piece-id
 	]
 ]
 
