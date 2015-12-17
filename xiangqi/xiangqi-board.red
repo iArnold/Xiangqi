@@ -62,6 +62,8 @@ played-moves-list: copy []
 computer-has: BLACK-1
 color-to-move: RED-0
 
+reversed-board?: false
+
 search-depth: 2
 
 ; turn on/off opening book
@@ -98,6 +100,7 @@ move-indicator-size: 0x0
 move-indicator-size: half-image-size + 5x5
 
 drag-saved-offset: 0x0
+save-from-xy: 0x0
 
 play-computer-move: func [
 	player-color [integer!]
@@ -162,23 +165,19 @@ new-game-as: func [
 	
 	;replace all pieces on the board
 	board-pieces: copy all-pieces
+	
+	reversed-board?: false
+	
+	if computer-has = RED-0 [
+		reversed-board?: true
+		rotate-board-pieces
+	]
+	
 	reset-pieces-faces
 	
 	if computer-has = color-to-move [
 		;play-computer-move
 	]
-]
-
-;-- Make sure dragged piece stays over other pieces
-bring-piece-to-top: func [
-	piece-name [string!]
-	/local face-object [object!] 
-][
-	piece-panel/pane: find piece-panel/pane piece-name
-	face-object: first piece-panel/pane
-	remove/part piece-panel/pane 1
-	piece-panel/pane: head piece-panel/pane
-	append piece-panel/pane face-object
 ]
 
 get-computer-move: func [
@@ -265,7 +264,7 @@ show-hide-piece-face: func [
 	board-pieces: head board-pieces
 ]
 
-; Play the move on play-board
+; Play the move on play-board block
 computer-move-on-board: func [
 	field-from [integer!]
 	field-to [integer!]
@@ -298,8 +297,7 @@ computer-move-on-board: func [
 	play-board/:field-from: 0
 ]
 
-
-player-move-on-play-board: func [
+gui-play-move: func [
 	move-from [pair!]
 	move-to [pair!]
 	/local field-from [integer!]
@@ -430,6 +428,49 @@ face-offset-to-xy: func [
 	out
 ]
 
+; Pieces to be placed on the canvas
+all-pieces: [
+	; piece		 		id	 offset piece-Type Western/Traditional(art) color
+	"white-king"       "WK"  4x9 "General"  "T" "R"
+	"white-advisor-1"  "WA1" 3x9 "Advisor"  "T" "R"
+	"white-advisor-2"  "WA2" 5x9 "Advisor"  "T" "R"
+	"white-elephant-1" "WE1" 2x9 "Elephant" "T" "R"
+	"white-elephant-2" "WE2" 6x9 "Elephant" "T" "R"
+	"white-horse-1"    "WH1" 1x9 "Horse"    "T" "R"
+	"white-horse-2"    "WH2" 7x9 "Horse"    "T" "R"
+	"white-chariot-1"  "WR1" 0x9 "Chariot"  "T" "R"
+	"white-chariot-2"  "WR2" 8x9 "Chariot"  "T" "R"
+	"white-canon-1"    "WC1" 1x7 "Cannon"   "T" "R"
+	"white-canon-2"    "WC2" 7x7 "Cannon"   "T" "R"
+	"white-pawn-1"     "WP1" 0x6 "Soldier"  "T" "R"
+	"white-pawn-2"     "WP2" 2x6 "Soldier"  "T" "R"
+	"white-pawn-3"     "WP3" 4x6 "Soldier"  "T" "R"
+	"white-pawn-4"     "WP4" 6x6 "Soldier"  "T" "R"
+	"white-pawn-5"     "WP5" 8x6 "Soldier"  "T" "R"
+	
+	"black-king"       "BK"  4x0 "General"  "T" "B"
+	"black-advisor-1"  "BA1" 3x0 "Advisor"  "T" "B"
+	"black-advisor-2"  "BA2" 5x0 "Advisor"  "T" "B"
+	"black-elephant-1" "BE1" 2x0 "Elephant" "T" "B"
+	"black-elephant-2" "BE2" 6x0 "Elephant" "T" "B"
+	"black-horse-1"    "BH1" 1x0 "Horse"    "T" "B"
+	"black-horse-2"    "BH2" 7x0 "Horse"    "T" "B"
+	"black-chariot-1"  "BR1" 0x0 "Chariot"  "T" "B"
+	"black-chariot-2"  "BR2" 8x0 "Chariot"  "T" "B"
+	"black-canon-1"    "BC1" 1x2 "Cannon"   "T" "B"
+	"black-canon-2"    "BC2" 7x2 "Cannon"   "T" "B"
+	"black-pawn-1"     "BP1" 0x3 "Soldier"  "T" "B"
+	"black-pawn-2"     "BP2" 2x3 "Soldier"  "T" "B"
+	"black-pawn-3"     "BP3" 4x3 "Soldier"  "T" "B"
+	"black-pawn-4"     "BP4" 6x3 "Soldier"  "T" "B"
+	"black-pawn-5"     "BP5" 8x3 "Soldier"  "T" "B"
+]
+
+board-pieces: copy all-pieces
+get-board-pieces: does [
+	board-pieces
+]
+
 ;-- actors
 
 piece-actors: object [
@@ -439,12 +480,10 @@ piece-actors: object [
 				either event/away? [
 					hints-canvas/draw: copy []
 				][
-					; Make sure the piece goes over all others
-					bring-piece-to-top first back find board-pieces face/id
-					
 					relative-offset: 0x0
 					relative-offset: face/offset - left-upper-corner/offset - canvas/offset - margins + field-size
 					fotxy: face-offset-to-xy relative-offset
+					save-from-xy: fotxy
 					fotxy-field: xy-to-field fotxy
 ;					if any [0 > fotxy/1
 ;							0 > fotxy/2
@@ -453,12 +492,16 @@ piece-actors: object [
 						mydestinations: select play-moves fotxy-field
 						face/dest: mydestinations
 						if not empty? mydestinations [
-							hints-block: copy [pen red fill-pen 255.0.0.50 ]
+							hints-block: either computer-has = RED-0 [
+								copy [pen blue fill-pen 0.0.255.50 ]
+							][
+								copy [pen red  fill-pen 255.0.0.50 ]
+							]
 							foreach dest mydestinations [
-								place: dest * 40 + 20x20
+								place: dest * field-size + half-image-size + 5x5
 								append hints-block 'circle
 								append hints-block place
-								append hints-block 20
+								append hints-block half-image-size/1 + 5
 							]
 							; for debug purposes
 							;probe hints-block
@@ -476,6 +519,10 @@ piece-actors: object [
 			; now hide the last move
 			played-move-canvas/draw: copy []
 			face/drag: true
+			; Make sure the piece goes over all others
+			print [face/id]
+			
+			bring-piece-to-top face-id-to-piece-name face/id
 		]
 		
 		on-drop: function [face [object!] event [event!]][
@@ -517,47 +564,23 @@ piece-actors: object [
 		]
 ]
 
-; Pieces to be placed on the canvas
-all-pieces: [
-	; piece		 		id	 offset piece-Type Western/Traditional(art) color
-	"white-king"       "WK"  4x9 "General"  "T" "R"
-	"white-advisor-1"  "WA1" 3x9 "Advisor"  "T" "R"
-	"white-advisor-2"  "WA2" 5x9 "Advisor"  "T" "R"
-	"white-elephant-1" "WE1" 2x9 "Elephant" "T" "R"
-	"white-elephant-2" "WE2" 6x9 "Elephant" "T" "R"
-	"white-horse-1"    "WH1" 1x9 "Horse"    "T" "R"
-	"white-horse-2"    "WH2" 7x9 "Horse"    "T" "R"
-	"white-chariot-1"  "WR1" 0x9 "Chariot"  "T" "R"
-	"white-chariot-2"  "WR2" 8x9 "Chariot"  "T" "R"
-	"white-canon-1"    "WC1" 1x7 "Cannon"   "T" "R"
-	"white-canon-2"    "WC2" 7x7 "Cannon"   "T" "R"
-	"white-pawn-1"     "WP1" 0x6 "Soldier"  "T" "R"
-	"white-pawn-2"     "WP2" 2x6 "Soldier"  "T" "R"
-	"white-pawn-3"     "WP3" 4x6 "Soldier"  "T" "R"
-	"white-pawn-4"     "WP4" 6x6 "Soldier"  "T" "R"
-	"white-pawn-5"     "WP5" 8x6 "Soldier"  "T" "R"
-	
-	"black-king"       "BK"  4x0 "General"  "T" "B"
-	"black-advisor-1"  "BA1" 3x0 "Advisor"  "T" "B"
-	"black-advisor-2"  "BA2" 5x0 "Advisor"  "T" "B"
-	"black-elephant-1" "BE1" 2x0 "Elephant" "T" "B"
-	"black-elephant-2" "BE2" 6x0 "Elephant" "T" "B"
-	"black-horse-1"    "BH1" 1x0 "Horse"    "T" "B"
-	"black-horse-2"    "BH2" 7x0 "Horse"    "T" "B"
-	"black-chariot-1"  "BR1" 0x0 "Chariot"  "T" "B"
-	"black-chariot-2"  "BR2" 8x0 "Chariot"  "T" "B"
-	"black-canon-1"    "BC1" 1x2 "Cannon"   "T" "B"
-	"black-canon-2"    "BC2" 7x2 "Cannon"   "T" "B"
-	"black-pawn-1"     "BP1" 0x3 "Soldier"  "T" "B"
-	"black-pawn-2"     "BP2" 2x3 "Soldier"  "T" "B"
-	"black-pawn-3"     "BP3" 4x3 "Soldier"  "T" "B"
-	"black-pawn-4"     "BP4" 6x3 "Soldier"  "T" "B"
-	"black-pawn-5"     "BP5" 8x3 "Soldier"  "T" "B"
+rotated-board-position: function [
+	position [pair!]
+	return: [pair!]
+	/local out [pair!]
+][
+	out: 8x9 - position
 ]
 
-board-pieces: copy all-pieces
-
-image-path: %images/
+rotate-board-pieces: func [
+	/local
+		p [string!] i [string!] t [string!] a [string!] c [string!]
+		o [pair!]
+][
+	foreach [p i o t a c] board-pieces [
+		o: rotated-board-position o
+	]
+]
 
 ; reset the board and place the pieces 
 reset-pieces-faces: func [
@@ -584,6 +607,8 @@ reset-pieces-faces: func [
 		do reset-piece
 	]
 ]
+
+image-path: %images/
 
 ; Create the face specs dynamically here
 make-piece-faces: func [
@@ -647,6 +672,65 @@ make-piece-faces: func [
 ]
 
 make-piece-faces 
+
+;-- Make sure dragged piece moves over other pieces while dragging
+start-pieces-pane-block: copy [
+	black-king	black-advisor-1	black-advisor-2	black-elephant-1	black-elephant-2
+	black-horse-1	black-horse-2	black-chariot-1	black-chariot-2	black-canon-1	black-canon-2
+	black-pawn-1	black-pawn-2	black-pawn-3	black-pawn-4	black-pawn-5
+
+	white-king	white-advisor-1	white-advisor-2	white-elephant-1	white-elephant-2
+	white-horse-1	white-horse-2	white-chariot-1	white-chariot-2	white-canon-1	white-canon-2
+	white-pawn-1	white-pawn-2	white-pawn-3	white-pawn-4	white-pawn-5
+]
+
+pieces-pane-block: copy []
+
+init-pieces-pane-block: does [ 
+	pieces-pane-block: copy start-pieces-pane-block
+]
+
+init-pieces-pane-block
+
+piece-top-z-order: copy ""
+
+set-piece-top-z-order: func [
+	name [string!]
+][
+	piece-top-z-order: name
+]
+
+set-piece-top-z-order "white-pawn-5"
+
+piece-top-z-order?: func [
+	name [string!]
+	return: [logic!]
+][
+	either name = piece-top-z-order [true][false]
+]
+
+face-id-to-piece-name: func [ 
+	face-id [string!]
+	return: [string!]
+][
+	first back find board-pieces face-id
+]
+
+bring-piece-to-top: func [
+	piece-name [string!]
+	/local piece-word [word!] 
+][
+	print "Bring-to-top"
+	if not piece-top-z-order? piece-name [
+		piece-word: load piece-name
+		pieces-pane-block: find pieces-pane-block load piece-name
+		take/part pieces-pane-block 1
+		pieces-pane-block: head pieces-pane-block
+		append pieces-pane-block piece-word
+		piece-panel/pane: reduce pieces-pane-block
+		show piece-panel
+	]
+]
 
 ; Declaring the window
 win: make face! [
@@ -738,41 +822,7 @@ win/pane: reduce [
 		offset: 0x0
 		size:	0x0
 		color:  none
-		pane:	reduce [ 
-			black-king
-			black-advisor-1
-			black-advisor-2
-			black-elephant-1
-			black-elephant-2
-			black-horse-1
-			black-horse-2
-			black-chariot-1
-			black-chariot-2
-			black-canon-1
-			black-canon-2
-			black-pawn-1
-			black-pawn-2
-			black-pawn-3
-			black-pawn-4
-			black-pawn-5
-
-			white-king
-			white-advisor-1
-			white-advisor-2
-			white-elephant-1
-			white-elephant-2
-			white-horse-1
-			white-horse-2
-			white-chariot-1
-			white-chariot-2
-			white-canon-1
-			white-canon-2
-			white-pawn-1
-			white-pawn-2
-			white-pawn-3
-			white-pawn-4
-			white-pawn-5
-		]
+		pane:	reduce pieces-block
 	]
 	
 ]
