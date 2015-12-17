@@ -748,11 +748,15 @@ bring-piece-id-to-top: func [
 		]
 		print counter
 		face-object: copy piece-panel/pane/:counter
-		print face-object/id
+		print ["face-object/id is" face-object/id]
+		print length? piece-panel/pane
 		take/part skip piece-panel/pane counter 1
 		;piece-panel/pane: head piece-panel/pane
+		print length? piece-panel/pane
 		append piece-panel/pane face-object
+		print length? piece-panel/pane
 		set-piece-top-z-order piece-id
+		show win
 	]
 ]
 
