@@ -822,7 +822,7 @@ win/pane: reduce [
 		offset: 0x0
 		size:	0x0
 		color:  none
-		pane:	reduce pieces-block
+		pane:	reduce pieces-pane-block
 	]
 	
 ]
