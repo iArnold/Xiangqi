@@ -523,7 +523,7 @@ piece-actors: object [
 			print [face/id]
 			
 			;bring-piece-to-top face-id-to-piece-name face/id
-			bring-piece-id-to-top face/id
+			bring-to-top face/id
 		]
 		
 		on-drop: function [face [object!] event [event!]][
@@ -717,46 +717,15 @@ face-id-to-piece-name: func [
 	first back find board-pieces face-id
 ]
 
-bring-piece-to-top: func [
-	piece-name [string!]
-	/local piece-word [word!] 
-][
-	print "Bring-to-top"
-	if not piece-top-z-order? piece-name [
-		piece-word: load piece-name
-		pieces-pane-block: find pieces-pane-block load piece-name
-		take/part pieces-pane-block 1
-		pieces-pane-block: head pieces-pane-block
-		append pieces-pane-block piece-word
-		probe pieces-pane-block
-		print piece-panel/pane/1/id
-		piece-panel/pane: reduce copy pieces-pane-block
-		;show piece-panel
-	]
-]
-
-bring-piece-id-to-top: func [
-	piece-id [string!]
-	/local piece-word [word!] counter [integer!] face-object [object!]
-][
-	print "Bring-piece-id-to-top"
-	if not piece-top-z-order? piece-id [
-		counter: 0
-		until [
-			counter: counter + 1
-			piece-id = piece-panel/pane/:counter/id
-		]
-		print counter
-		face-object: copy piece-panel/pane/:counter
-		print ["face-object/id is" face-object/id]
-		print length? piece-panel/pane
-		take/part skip piece-panel/pane counter 1
-		;piece-panel/pane: head piece-panel/pane
-		print length? piece-panel/pane
-		append piece-panel/pane face-object
-		print length? piece-panel/pane
-		set-piece-top-z-order piece-id
-		show win
+bring-to-top: func [item /local parent pane] [
+	if all [
+		parent: item/parent
+		block? pane: parent/pane
+	][
+		;reverse pane                      ;<--- it's possible to drag with this
+		swap find pane item back tail pane ;<--- it's possible to drag with this
+		;append pane take find pane item   ;<--- but not possible to drag with this
+		show parent
 	]
 ]
 
