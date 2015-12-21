@@ -102,31 +102,6 @@ move-indicator-size: half-image-size + 5x5
 drag-saved-offset: 0x0
 save-from-xy: 0x0
 
-play-computer-move: func [
-	player-color [integer!]
-	/local 
-		computer-move [block!]
-		move-pairs [block!]
-][
-	; set message to computing move now
-	set-message computer-has	
-	; set move pictogram to computer
-	change-move-indication computer-has
-	; compute the move
-	computer-move: get-computer-move
-	; Play the move on the GUI, includes add move to the played moves list
-	; and also include play the move on the play-board
-	move-pairs: integer-move-to-GUI-move
-	gui-play-move move-pairs/1 move-pairs/2
-	; show last move
-	played-move-canvas/draw: create-played-move-canvas move-pairs
-	show played-move-canvas
-	; reset message
-	set-message 1 - computer-has
-	; set move pictogram to player
-	change-move-indication 1 - computer-has
-]
-
 create-played-move-canvas: func [
 	move-block [block!]
 	return: [block!]
@@ -147,6 +122,31 @@ create-played-move-canvas: func [
 	append pmc 'circle
 	append pmc place
 	pmc: append pmc half-image-size/1 + 5
+]
+
+play-computer-move: func [
+	player-color [integer!]
+	/local 
+		computer-move [block!]
+		move-pairs [block!]
+][
+	; set message to computing move now
+	set-message computer-has	
+	; set move pictogram to computer
+	change-move-indication computer-has
+	; compute the move
+	computer-move: get-computer-move
+	; Play the move on the GUI, includes add move to the played moves list
+	; and also includes play the move on the play-board block
+	move-pairs: integer-move-to-GUI-move computer-move
+	gui-play-move move-pairs/1 move-pairs/2
+	; show last move
+	played-move-canvas/draw: create-played-move-canvas move-pairs
+	show played-move-canvas
+	; reset message
+	set-message 1 - computer-has
+	; set move pictogram to player
+	change-move-indication 1 - computer-has
 ]
 
 ;-- functions for the buttons ----
@@ -210,7 +210,7 @@ integer-move-to-GUI-move: function [
 change-move-indication: func [
 	to-color [integer!]
 ][
-	either 1 = to-color [
+	either BLACK-1 = to-color [
 		red-to-move/size: 0x0
 		black-to-move/size: move-indicator-size
 	][
@@ -312,10 +312,7 @@ gui-play-move: func [
 	piece: play-board/:field-from
 	capture-value: play-board/:field-to
 	move: copy []
-	append move piece
-	append move field-from
-	append move field-to
-	append move capture-value
+	move: rejoin [piece field-from field-to capture-value]
 	if 0 < capture-value [
 		; get face/id from piece
 		board-pieces: head board-pieces
@@ -519,15 +516,22 @@ piece-actors: object [
 			; now hide the last move
 			played-move-canvas/draw: copy []
 			face/drag: true
+			; save from field location
+			;fotxy: face-offset-to-xy relative-offset
+			;save-from-xy: fotxy
+			;fotxy-field: xy-to-field fotxy
 			; Make sure the piece goes over all others
 			print [face/id]
-			
-			;bring-piece-to-top face-id-to-piece-name face/id
-			bring-to-top face/id
+			; Only bring to top if it is not already on top
+			if not piece-top-z-order? face/id [
+				bring-to-top face/id
+				set-piece-top-z-order face-id-to-piece-name face/id
+			]
 		]
 		
 		on-drop: function [face [object!] event [event!]][
 ;			print ["dropping" event/offset face/offset]
+			face/drag: false
 			either empty? face/dest [
 				face/offset: drag-saved-offset
 			][
@@ -544,7 +548,12 @@ piece-actors: object [
 						face/offset: drag-saved-offset
 					][ 
 						either found? find face/dest drop-fotxy [
-							; here an allowed move was preformed
+							; here an allowed move was performed
+							drop-field: xy-to-field drop-fotxy
+							if 0 < play-board/:drop-field [
+								; hide the piece that is here on the board
+								
+							]
 							drop-fotxy: drop-fotxy * field-size + half-image-size - half-field
 							; Because win/offset is on the outside of the window, generally a difference of 8x30 or 8x50
 							face/offset: left-upper-corner/offset + margins + drop-fotxy
@@ -552,7 +561,7 @@ piece-actors: object [
 							; perform the players move on the play-board
 							
 							; and get the return move from the computer
-							;play-computer-move
+							play-computer-move
 						][
 							face/offset: drag-saved-offset
 						]
@@ -597,13 +606,7 @@ reset-pieces-faces: func [
 		piece-offset: 0x0
 		piece-offset: o * field-size + correction-offset
 		reset-piece-string: copy ""
-		append reset-piece-string p
-		append reset-piece-string "/offset: " 
-		append reset-piece-string piece-offset
-		append reset-piece-string " " 
-		append reset-piece-string p
-		append reset-piece-string "/size: " 
-		append reset-piece-string image-size
+		reset-piece-string: rejoin [p "/offset: " piece-offset " " p "/size: " image-size]
 		reset-piece: load reset-piece-string
 		do reset-piece
 	]
@@ -625,39 +628,19 @@ make-piece-faces: func [
 		declare-piece: copy []
 		declare-piece-string: copy ""
 
-		append declare-piece-string p
-	
-		append declare-piece-string ": make face! ["
-		append declare-piece-string newline
-		append declare-piece-string "type: 'base offset: "
-
+		declare-piece-string: rejoin [p ": make face! [" newline "type: 'base offset: "]
 		piece-offset: 0x0
 		piece-offset: o * field-size + correction-offset
-		append declare-piece-string piece-offset
-
-		; for debug purposes
-		;print ["piece " p " at " piece-offset]
-		append declare-piece-string " size: "
-		append declare-piece-string image-size
-		append declare-piece-string newline
-		append declare-piece-string "image: load %"
-		append declare-piece-string image-path 
-		append declare-piece-string "Xiangqi_"
-		append declare-piece-string t
-		append declare-piece-string "_"
-		append declare-piece-string a
-		append declare-piece-string c
-		append declare-piece-string ".png"
-		append declare-piece-string newline
-		append declare-piece-string "	options: [drag-on: 'down]"
-		append declare-piece-string newline
-		append declare-piece-string {	id: "}
-		append declare-piece-string i
-		append declare-piece-string {"}
-		append declare-piece-string newline
-		append declare-piece-string "	actors: piece-actors"
-		append declare-piece-string newline
-		append declare-piece-string " dest: copy [] drag: false ]"
+		declare-piece-string: rejoin [
+			declare-piece-string piece-offset 
+		    " size: " image-size newline 
+		    "image: load %" image-path "Xiangqi_"
+			t "_" a c ".png" newline 
+			"	options: [drag-on: 'down]" newline
+			{	id: "} i {"} newline
+			"	actors: piece-actors" newline
+			" dest: copy [] drag: false ]"
+		]
 		
 		; for debug purposes
 		;print declare-piece-string 
@@ -722,9 +705,7 @@ bring-to-top: func [item /local parent pane] [
 		parent: item/parent
 		block? pane: parent/pane
 	][
-		;reverse pane                      ;<--- it's possible to drag with this
 		swap find pane item back tail pane ;<--- it's possible to drag with this
-		;append pane take find pane item   ;<--- but not possible to drag with this
 		show parent
 	]
 ]
