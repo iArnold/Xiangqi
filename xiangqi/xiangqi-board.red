@@ -251,6 +251,16 @@ show-hide-piece-face: func [
 	][ ; using location
 		first back back find board-pieces piece-info
 	]
+
+	board-pieces: head board-pieces
+	next next find board-pieces piece-name
+	board-pieces/1: board-pieces/1 * -1
+	either show? [ ; works well but not for 0x0 so we (dirty) hack this situation
+		if -9x-9 = board-pieces/1 [board-pieces/1: 0x0]
+	][
+		if 0x0 = board-pieces/1 [board-pieces/1: -9x-9]
+	]
+	board-pieces: head board-pieces
 	
 	reset-piece-string: copy ""
 	append reset-piece-string piece-name
@@ -322,6 +332,12 @@ gui-play-move: func [
 		append move piece-id
 		show-hide-piece-face move-to no ; false means to hide
 	]
+	; set grid location of moving piece to new position
+	board-pieces: head board-pieces
+	find board-pieces move-from
+	board-pieces/1: move-to
+	board-pieces: head board-pieces
+	; append move to the list	
 	append/only played-moves-list move
 	play-board/:field-to: piece
 	play-board/:field-from: 0
@@ -426,6 +442,8 @@ face-offset-to-xy: func [
 ]
 
 ; Pieces to be placed on the canvas
+; The offset is used as grid location of the piece. 
+; It is also used to compute the piece face/offset. 
 all-pieces: [
 	; piece		 		id	 offset piece-Type Western/Traditional(art) color
 	"white-king"       "WK"  4x9 "General"  "T" "R"
@@ -517,9 +535,9 @@ piece-actors: object [
 			played-move-canvas/draw: copy []
 			face/drag: true
 			; save from field location
-			;fotxy: face-offset-to-xy relative-offset
-			;save-from-xy: fotxy
-			;fotxy-field: xy-to-field fotxy
+			;relative-offset: 0x0
+			;relative-offset: face/offset - left-upper-corner/offset - canvas/offset - margins + field-size
+			;save-from-xy: face-offset-to-xy relative-offset
 			; Make sure the piece goes over all others
 			print [face/id]
 			; Only bring to top if it is not already on top
@@ -549,17 +567,15 @@ piece-actors: object [
 					][ 
 						either found? find face/dest drop-fotxy [
 							; here an allowed move was performed
-							drop-field: xy-to-field drop-fotxy
-							if 0 < play-board/:drop-field [
-								; hide the piece that is here on the board
-								
-							]
+							; set new location for the moving piece in the board-pieces block
+							; add players move to the played-move-list
+							; perform the players move on the play-board block
+							gui-play-move save-from-xy drop-fotxy						
+							; set the piece face/offset to the new location (exact placing on grid)
 							drop-fotxy: drop-fotxy * field-size + half-image-size - half-field
 							; Because win/offset is on the outside of the window, generally a difference of 8x30 or 8x50
 							face/offset: left-upper-corner/offset + margins + drop-fotxy
-							; add players move to the played-move-list
-							; perform the players move on the play-board
-							
+
 							; and get the return move from the computer
 							play-computer-move
 						][
