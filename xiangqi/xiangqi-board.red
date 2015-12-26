@@ -686,7 +686,8 @@ start-pieces-pane-block: copy [
 
 pieces-pane-block: copy []
 
-init-pieces-pane-block: does [ 
+init-pieces-pane-block: func [
+][ 
 	pieces-pane-block: copy start-pieces-pane-block
 ]
 
