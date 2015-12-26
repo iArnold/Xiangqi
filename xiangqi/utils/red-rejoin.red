@@ -1,5 +1,6 @@
-; "Reduces and joins a block of values." 
-    
+Red [ "Reduces and joins a block of values." 
+]
+
 rejoin: func [
     block [block!] "Values to reduce and join"
 ][
