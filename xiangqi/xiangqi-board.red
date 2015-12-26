@@ -176,7 +176,7 @@ new-game-as: func [
 	reset-pieces-faces
 	
 	if computer-has = color-to-move [
-		;play-computer-move
+		;play-computer-move computer-has
 	]
 ]
 
@@ -577,7 +577,7 @@ piece-actors: object [
 							face/offset: left-upper-corner/offset + margins + drop-fotxy
 
 							; and get the return move from the computer
-							play-computer-move
+							play-computer-move computer-has
 						][
 							face/offset: drag-saved-offset
 						]
