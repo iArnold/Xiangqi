@@ -737,7 +737,7 @@ bring-to-top: func [item /local parent pane] [
 
 ; Declaring the window
 win: make face! [
-	type: 'window text: "Xiangqi in Red by: Arnold" offset: 300x200 size: 400x600
+	type: 'window text: "Xiangqi in Red by: Arnold" offset: 300x200 size: 400x500
 ]
 
 ; -- Declare window pane
