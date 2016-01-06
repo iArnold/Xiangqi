@@ -19,8 +19,5 @@ comment {
 ; New 'FOUND? replacement
 #include %red-found.red
 
-; Because the power is not in compiled Red
-#include %red-power.red
-
 ; Because rejoin is so much nicer than all appends
 #include %red-rejoin.red
