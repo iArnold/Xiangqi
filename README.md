@@ -59,14 +59,17 @@ Compiling this program
 ----------------------
 
 To compile this program, you will need the sourcecode, a Rebol (View) program for your 
-computer and the Red sources. You can find very specific information how to compile Red
-programs on the Github site of Red here: https://github.com/red/red
+computer and the Red sources. Because the GUI branch has been merged into the master 
+branch you can now use the sources from the master branch. 
+You can find very specific information how to compile Red programs on the Github site of 
+Red here: https://github.com/red/red
 In short it is start your Rebol View program, go to the console and change directory 
 to the Red source folder 
 	cd red
 and do
 	do %red.r
 	rc %../xiangqi/xiangqi/xiangqi-console.red
+( Note that I have renamed the folder Xiangqi-master to xiangqi ).
 And Red will create your program in the Red folder.
 
 Compiling the GUI version is done by
@@ -76,7 +79,9 @@ improvements, it will show all print and probe debugging helper commands you hav
 inside your changed code.
 If you do not want such a command window to appear you compile using
 	do/args %red.r "-c -t Windows %../xiangqi/xiangqi/xiangqi-console.red"
-
+Because the program needs to load the images for the pieces you must make sure the folder
+the program is in contains the images folder and images. (Or you copy the program from the
+Red folder over to the Xiangqi/xiangqi folder
 
 Testprograms
 ------------
