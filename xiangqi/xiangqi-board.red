@@ -3,7 +3,7 @@ Red [
 	filename: %xiangqi-board.red
 	author:   "Arnold van Hofwegen"
 	version:  0.6.0
-	date:     "10-Dec-2015"
+	date:     "06-Jan-2016"
 	Needs: 'View
 ]
 
@@ -33,7 +33,8 @@ print [
 
 ; Move generation
 #include %xiangqi-move-common.red
-#include %xiangqi-moves-gui.red
+;#include %xiangqi-moves-gui.red
+#include %xiangqi-moves.red
 
 ; Notation conversion and conversion between board and screen values of fields
 #include %xiangqi-convertions.red
@@ -102,6 +103,28 @@ move-indicator-size: half-image-size + 5x5
 drag-saved-offset: 0x0
 save-from-xy: 0x0
 
+set-save-from-xy: func [
+	pair [pair!]
+][
+	save-from-xy: pair
+]
+
+get-save-from-xy: func [
+][
+	save-from-xy
+]
+
+set-drag-saved-offset: func [
+	pair [pair!]
+][
+	drag-saved-offset: pair
+]
+
+get-drag-saved-offset: func [
+][
+	drag-saved-offset
+]
+
 create-played-move-canvas: func [
 	move-block [block!]
 	return: [block!]
@@ -110,9 +133,9 @@ create-played-move-canvas: func [
 ][
 	pmc: copy []
 	pmc: copy either RED-0 = computer-has [
-		[pen red fill-pen 255.0.0.50]
+		[pen red fill-pen 255.0.0.205]
 	][
-		[pen blue fill-pen 0.0.255.50]
+		[pen blue fill-pen 0.0.255.205]
 	]
 	place: move-block/1 * field-size + margins
 	append pmc 'circle
@@ -139,6 +162,7 @@ play-computer-move: func [
 	; Play the move on the GUI, includes add move to the played moves list
 	; and also includes play the move on the play-board block
 	move-pairs: integer-move-to-GUI-move computer-move
+	print "play-computer-move" print [move-pairs/1 move-pairs/2]
 	gui-play-move move-pairs/1 move-pairs/2
 	; show last move
 	played-move-canvas/draw: create-played-move-canvas move-pairs
@@ -253,8 +277,8 @@ show-hide-piece-face: func [
 	]
 
 	board-pieces: head board-pieces
-	next next find board-pieces piece-name
-	board-pieces/1: board-pieces/1 * -1
+	board-pieces: next next find board-pieces piece-name
+	board-pieces/1: -1 * board-pieces/1 
 	either show? [ ; works well but not for 0x0 so we (dirty) hack this situation
 		if -9x-9 = board-pieces/1 [board-pieces/1: 0x0]
 	][
@@ -317,6 +341,7 @@ gui-play-move: func [
 		move [block!]
 		piece-id [string!]
 ][
+print ["gui-play-move move-from" move-from " move-to" move-to]
 	field-from: xy-to-field move-from
 	field-to:   xy-to-field move-to
 	piece: play-board/:field-from
@@ -327,6 +352,7 @@ gui-play-move: func [
 		; get face/id from piece
 		board-pieces: head board-pieces
 		back find board-pieces move-to
+		;find board-pieces move-to
 		piece-id: board-pieces/1
 		board-pieces: head board-pieces
 		append move piece-id
@@ -334,7 +360,7 @@ gui-play-move: func [
 	]
 	; set grid location of moving piece to new position
 	board-pieces: head board-pieces
-	find board-pieces move-from
+	board-pieces: find board-pieces move-from
 	board-pieces/1: move-to
 	board-pieces: head board-pieces
 	; append move to the list	
@@ -498,7 +524,7 @@ piece-actors: object [
 					relative-offset: 0x0
 					relative-offset: face/offset - left-upper-corner/offset - canvas/offset - margins + field-size
 					fotxy: face-offset-to-xy relative-offset
-					save-from-xy: fotxy
+					set-save-from-xy fotxy
 					fotxy-field: xy-to-field fotxy
 ;					if any [0 > fotxy/1
 ;							0 > fotxy/2
@@ -508,9 +534,9 @@ piece-actors: object [
 						face/dest: mydestinations
 						if not empty? mydestinations [
 							hints-block: either computer-has = RED-0 [
-								copy [pen blue fill-pen 0.0.255.50 ]
+								copy [pen blue fill-pen 0.0.255.205 ]
 							][
-								copy [pen red  fill-pen 255.0.0.50 ]
+								copy [pen red  fill-pen 255.0.0.205 ]
 							]
 							foreach dest mydestinations [
 								place: dest * field-size + half-image-size + 5x5
@@ -528,9 +554,9 @@ piece-actors: object [
 			]
 		]
 		
-		on-drag-start: func [face [object!] event [event!]][
+		on-drag-start: function [face [object!] event [event!]][
 ;			print ["drag starts at" event/offset face/offset]
-			drag-saved-offset: face/offset
+			set-drag-saved-offset face/offset
 			; now hide the last move
 			played-move-canvas/draw: copy []
 			face/drag: true
@@ -542,7 +568,7 @@ piece-actors: object [
 			print [face/id]
 			; Only bring to top if it is not already on top
 			if not piece-top-z-order? face/id [
-				bring-to-top face/id
+				bring-to-top face
 				set-piece-top-z-order face-id-to-piece-name face/id
 			]
 		]
@@ -551,26 +577,27 @@ piece-actors: object [
 ;			print ["dropping" event/offset face/offset]
 			face/drag: false
 			either empty? face/dest [
-				face/offset: drag-saved-offset
+				face/offset: get-drag-saved-offset
 			][
 				relative-offset: 0x0
 				relative-offset: face/offset - left-upper-corner/offset - correction-offset + half-field
 				
 				either any [0 > relative-offset/1 
 							0 > relative-offset/2][
-					face/offset: drag-saved-offset
+					face/offset: get-drag-saved-offset
 				][
 					drop-fotxy: face-offset-to-xy relative-offset
 					either any [ 8 < drop-fotxy/1
 							 	 9 < drop-fotxy/2 ][
-						face/offset: drag-saved-offset
+						face/offset: get-drag-saved-offset
 					][ 
 						either found? find face/dest drop-fotxy [
 							; here an allowed move was performed
 							; set new location for the moving piece in the board-pieces block
 							; add players move to the played-move-list
 							; perform the players move on the play-board block
-							gui-play-move save-from-xy drop-fotxy						
+							print [" on drop " get-save-from-xy drop-fotxy ]
+							gui-play-move get-save-from-xy drop-fotxy						
 							; set the piece face/offset to the new location (exact placing on grid)
 							drop-fotxy: drop-fotxy * field-size + half-image-size - half-field
 							; Because win/offset is on the outside of the window, generally a difference of 8x30 or 8x50
@@ -579,7 +606,7 @@ piece-actors: object [
 							; and get the return move from the computer
 							play-computer-move computer-has
 						][
-							face/offset: drag-saved-offset
+							face/offset: get-drag-saved-offset
 						]
 					]
 				]
@@ -714,6 +741,10 @@ face-id-to-piece-name: func [
 	face-id [string!]
 	return: [string!]
 ][
+	board-pieces: head board-pieces
+	; debugging
+	;print ["face-id-to-piece-name" face-id]
+	;probe board-pieces
 	first back find board-pieces face-id
 ]
 
@@ -722,7 +753,11 @@ bring-to-top: func [item /local parent pane] [
 		parent: item/parent
 		block? pane: parent/pane
 	][
+	print "bring-to-top"
+	print length? pane
+		;reverse pane                      ;<--- it's possible to drag with this
 		swap find pane item back tail pane ;<--- it's possible to drag with this
+		;append pane take find pane item   ;<--- but not possible to drag with this
 		show parent
 	]
 ]
