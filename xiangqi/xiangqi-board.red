@@ -33,7 +33,6 @@ print [
 
 ; Move generation
 #include %xiangqi-move-common.red
-;#include %xiangqi-moves-gui.red
 #include %xiangqi-moves.red
 
 ; Notation conversion and conversion between board and screen values of fields
@@ -148,25 +147,32 @@ create-played-move-canvas: func [
 ]
 
 play-computer-move: func [
-	player-color [integer!]
 	/local 
 		computer-move [block!]
 		move-pairs [block!]
 ][
 	; set message to computing move now
 	set-message computer-has	
+	
 	; set move pictogram to computer
 	change-move-indication computer-has
+	
 	; compute the move
 	computer-move: get-computer-move
+	
 	; Play the move on the GUI, includes add move to the played moves list
 	; and also includes play the move on the play-board block
 	move-pairs: integer-move-to-GUI-move computer-move
-	print "play-computer-move" print [move-pairs/1 move-pairs/2]
-	gui-play-move move-pairs/1 move-pairs/2
+	
+	gui-play-move/computer move-pairs/1 move-pairs/2
 	; show last move
 	played-move-canvas/draw: create-played-move-canvas move-pairs
 	show played-move-canvas
+
+	; make new play-moves list
+	move-list: make-move-list play-board ( 1 - computer-has )
+	play-moves: display-moves-list move-list
+
 	; reset message
 	set-message 1 - computer-has
 	; set move pictogram to player
@@ -200,7 +206,7 @@ new-game-as: func [
 	reset-pieces-faces
 	
 	if computer-has = color-to-move [
-		;play-computer-move computer-has
+		play-computer-move
 	]
 ]
 
@@ -298,50 +304,18 @@ show-hide-piece-face: func [
 	board-pieces: head board-pieces
 ]
 
-; Play the move on play-board block
-computer-move-on-board: func [
-	field-from [integer!]
-	field-to [integer!]
-	/local 
-		piece [integer!]
-		capture-value [integer!]
-		move [block!]
-		piece-id [string!]
-		move-to [pair!]
-][
-	move-to: field-to-xy field-to
-	piece: play-board/:field-from
-	capture-value: play-board/:field-to
-	move: copy []
-	append move piece
-	append move field-from
-	append move field-to
-	append move capture-value
-	if 0 < capture-value [
-		; get face/id from piece
-		board-pieces: head board-pieces
-		back find board-pieces move-to
-		piece-id: board-pieces/1
-		board-pieces: head board-pieces
-		append move piece-id
-		show-hide-piece-face move-to no ; false means to hide
-	]
-	append/only played-moves-list move
-	play-board/:field-to: piece
-	play-board/:field-from: 0
-]
-
 gui-play-move: func [
 	move-from [pair!]
 	move-to [pair!]
+	/computer
 	/local field-from [integer!]
 		field-to [integer!]
 		piece [integer!]
 		capture-value [integer!]
 		move [block!]
 		piece-id [string!]
+		computer-offset [pair!]
 ][
-print ["gui-play-move move-from" move-from " move-to" move-to]
 	field-from: xy-to-field move-from
 	field-to:   xy-to-field move-to
 	piece: play-board/:field-from
@@ -352,7 +326,6 @@ print ["gui-play-move move-from" move-from " move-to" move-to]
 		; get face/id from piece
 		board-pieces: head board-pieces
 		back find board-pieces move-to
-		;find board-pieces move-to
 		piece-id: board-pieces/1
 		board-pieces: head board-pieces
 		append move piece-id
@@ -360,8 +333,17 @@ print ["gui-play-move move-from" move-from " move-to" move-to]
 	]
 	; set grid location of moving piece to new position
 	board-pieces: head board-pieces
-	board-pieces: find board-pieces move-from
-	board-pieces/1: move-to
+	board-pieces: back find board-pieces move-from
+	board-pieces/2: move-to
+	if computer [
+		; adjust face/offset of played piece
+		foreach computerpiece piece-panel/pane [
+			if computerpiece/id = board-pieces/1 [
+				computer-offset: left-upper-corner/offset + margins + ( field-size * move-to ) + half-image-size - half-field
+				computerpiece/offset: computer-offset
+			]
+		]
+	]
 	board-pieces: head board-pieces
 	; append move to the list	
 	append/only played-moves-list move
@@ -565,7 +547,6 @@ piece-actors: object [
 			;relative-offset: face/offset - left-upper-corner/offset - canvas/offset - margins + field-size
 			;save-from-xy: face-offset-to-xy relative-offset
 			; Make sure the piece goes over all others
-			print [face/id]
 			; Only bring to top if it is not already on top
 			if not piece-top-z-order? face/id [
 				bring-to-top face
@@ -596,7 +577,6 @@ piece-actors: object [
 							; set new location for the moving piece in the board-pieces block
 							; add players move to the played-move-list
 							; perform the players move on the play-board block
-							print [" on drop " get-save-from-xy drop-fotxy ]
 							gui-play-move get-save-from-xy drop-fotxy						
 							; set the piece face/offset to the new location (exact placing on grid)
 							drop-fotxy: drop-fotxy * field-size + half-image-size - half-field
@@ -604,7 +584,7 @@ piece-actors: object [
 							face/offset: left-upper-corner/offset + margins + drop-fotxy
 
 							; and get the return move from the computer
-							play-computer-move computer-has
+							play-computer-move
 						][
 							face/offset: get-drag-saved-offset
 						]
@@ -742,9 +722,6 @@ face-id-to-piece-name: func [
 	return: [string!]
 ][
 	board-pieces: head board-pieces
-	; debugging
-	;print ["face-id-to-piece-name" face-id]
-	;probe board-pieces
 	first back find board-pieces face-id
 ]
 
@@ -753,11 +730,7 @@ bring-to-top: func [item /local parent pane] [
 		parent: item/parent
 		block? pane: parent/pane
 	][
-	print "bring-to-top"
-	print length? pane
-		;reverse pane                      ;<--- it's possible to drag with this
 		swap find pane item back tail pane ;<--- it's possible to drag with this
-		;append pane take find pane item   ;<--- but not possible to drag with this
 		show parent
 	]
 ]
@@ -812,7 +785,7 @@ win/pane: reduce [
 		type: 'button text: "take back" offset: 290x415 size: 80x24
 		actors: object [
 			on-click: func [face [object!] event [event!]][
-				print "take back code"
+				print "take back code to be added"
 			]
 		]
 	]
@@ -821,7 +794,7 @@ win/pane: reduce [
 		type: 'button text: "New Game (Red)" offset: 10x465 size: 145x24
 		actors: object [
 			on-click: func [face [object!] event [event!]][
-				print "New game as Red player code"
+				print "New game as Red player code to be added"
 				; new-game-as RED-0
 			]
 		]
@@ -831,7 +804,7 @@ win/pane: reduce [
 		type: 'button text: "New Game (Black)" offset: 160x465 size: 145x24
 		actors: object [
 			on-click: func [face [object!] event [event!]][
-				print "New game as Black player code"
+				print "New game as Black player code to be added"
 				;new-game-as BLACK-1
 			]
 		]
