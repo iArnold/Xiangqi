@@ -69,8 +69,10 @@ to the Red source folder
 and do
 	do %red.r
 	rc %../xiangqi/xiangqi/xiangqi-console.red
-( Note that I have renamed the folder Xiangqi-master to xiangqi ).
-And Red will create your program in the Red folder.
+Note that I have renamed the folder Xiangqi-master you get when unpacking the 
+Xiangqi-master.zip file you downloaded to Xiangqi, I also like to rename Red-master folder
+to just Red folder.
+And now the Red compiler will create your program in the Red folder.
 
 Compiling the GUI version is done by
 	rc %../xiangqi/xiangqi/xiangqi-board.red
