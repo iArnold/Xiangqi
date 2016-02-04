@@ -46,7 +46,9 @@ The console program was made using the 0.5.4 version of the Red programming lang
 Therefore also the bindings by Kaj de Vos, included here in the bind folder, are the 
 corresponding files for this Red version also. When updating to a next version of Red, 
 the bindings should be upgraded as well. The original bindings by Kaj de Vos can be 
-found here http://red.esperconsultancy.nl/Red-test 
+found here 
+
+	http://red.esperconsultancy.nl/Red-test 
 
 The GUI version of the program, xiangqi-board.red, is made with the development version 
 of Red 0.6.0.
@@ -62,25 +64,36 @@ To compile this program, you will need the sourcecode, a Rebol (View) program fo
 computer and the Red sources. Because the GUI branch has been merged into the master 
 branch you can now use the sources from the master branch. 
 You can find very specific information how to compile Red programs on the Github site of 
-Red here: https://github.com/red/red
+Red here: 
+
+	https://github.com/red/red
+
 In short it is start your Rebol View program, go to the console and change directory 
 to the Red source folder 
+
 	cd red
+
 and do
+
 	do %red.r
 	rc %../xiangqi/xiangqi/xiangqi-console.red
+
 Note that I have renamed the folder Xiangqi-master you get when unpacking the 
 Xiangqi-master.zip file you downloaded to Xiangqi, I also like to rename Red-master folder
 to just Red folder.
 And now the Red compiler will create your program in the Red folder.
 
 Compiling the GUI version is done by
+
 	rc %../xiangqi/xiangqi/xiangqi-board.red
+
 You will notice this opens a command window as well. This is handy for trying out 
 improvements, it will show all print and probe debugging helper commands you have put 
 inside your changed code.
 If you do not want such a command window to appear you compile using
+
 	do/args %red.r "-c -t Windows %../xiangqi/xiangqi/xiangqi-console.red"
+
 Because the program needs to load the images for the pieces you must make sure the folder
 the program is in contains the images folder and images. (Or you copy the program from the
 Red folder over to the Xiangqi/xiangqi folder
