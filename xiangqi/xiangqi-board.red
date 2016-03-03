@@ -53,14 +53,15 @@ print [
 #include %xiangqi-best-move.red
 
 ;-- Declare some move variables ----
-move-list:	copy []
-play-board:	copy start-board
-move-list:	make-move-list play-board 0
-play-moves:	display-moves-list move-list
-played-moves-list: copy []
-
 computer-has: BLACK-1
 color-to-move: RED-0
+
+play-board:	copy start-board
+move-list:	copy []
+move-list:	make-move-list play-board 0
+
+play-moves:	display-moves-list move-list
+played-moves-list: copy []
 
 reversed-board?: false
 
@@ -70,7 +71,6 @@ search-depth: 2
 in-opening-book: true
 
 ;-- Initialize board margin and field size ----
-
 margin-board: margin-x: margin-y: 20
 margins: 0x0
 margins/1: margin-x
@@ -99,7 +99,6 @@ correction-offset: correction-offset + canvas-offset - half-image-size
 move-indicator-size: 0x0
 move-indicator-size: half-image-size + 5x5
 
-drag-saved-offset: 0x0
 save-from-xy: 0x0
 
 set-save-from-xy: func [
@@ -112,6 +111,8 @@ get-save-from-xy: func [
 ][
 	save-from-xy
 ]
+
+drag-saved-offset: 0x0
 
 set-drag-saved-offset: func [
 	pair [pair!]
@@ -165,6 +166,7 @@ play-computer-move: func [
 	move-pairs: integer-move-to-GUI-move computer-move
 	
 	gui-play-move/computer move-pairs/1 move-pairs/2
+
 	; show last move
 	played-move-canvas/draw: create-played-move-canvas move-pairs
 	show played-move-canvas
@@ -179,7 +181,9 @@ play-computer-move: func [
 	change-move-indication 1 - computer-has
 ]
 
+;---------------------------------
 ;-- functions for the buttons ----
+;---------------------------------
 new-game-as: func [
 	player-color [integer!]
 ][
@@ -401,8 +405,10 @@ take-back-move: func [
 	return 0
 ]
 
+;---------------------------------------------------------------------
 ; Simple declaration of all pieces needed for compilation, 
 ; the definitions are made at runtime to be flexible in size and place
+;---------------------------------------------------------------------
 white-king: 
 white-advisor-1: 
 white-advisor-2: 
@@ -494,8 +500,9 @@ get-board-pieces: does [
 	board-pieces
 ]
 
+;---------
 ;-- actors
-
+;---------
 piece-actors: object [
 		on-over: function [face [object!] event [event!]][
 ;			print ["Event over" event/offset event/away?]
@@ -596,6 +603,7 @@ piece-actors: object [
 			hints-canvas/draw: copy []
 		]
 ]
+;-- einde actors
 
 rotated-board-position: function [
 	position [pair!]
@@ -734,8 +742,9 @@ bring-to-top: func [item /local parent pane] [
 		show parent
 	]
 ]
-
+;---------------------
 ; Declaring the window
+;---------------------
 win: make face! [
 	type: 'window text: "Xiangqi in Red by: Arnold" offset: 300x200 size: 400x500
 ]
@@ -829,8 +838,9 @@ win/pane: reduce [
 	]
 	
 ]
-
+;--------------------------
 ; Set canvas size (360x400)
+;--------------------------
 canvas/size/1: 2 * margin-board + ( 8 * field-width )
 canvas/size/2: 2 * margin-board + ( 9 * field-height )
 
@@ -839,7 +849,9 @@ canvas/offset: canvas-offset
 played-move-canvas/offset: canvas-offset
 hints-canvas/offset: canvas-offset
 
+;----------------------------------
 ; Start drawing board on the canvas
+;----------------------------------
 canvas/draw: [
 	line-cap round
 	pen black
