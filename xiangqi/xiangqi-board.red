@@ -3,7 +3,7 @@ Red [
 	filename: %xiangqi-board.red
 	author:   "Arnold van Hofwegen"
 	version:  0.6.0
-	date:     "06-Jan-2016"
+	date:     "07-Mrt-2016"
 	Needs: 'View
 ]
 
@@ -87,9 +87,9 @@ image-size/1: image-width
 image-size/2: image-height
 half-image-size: image-size / 2
 
-half-field: 0x0
-half-field/1:  field-width / 2
-half-field/2: field-height / 2
+half-field-size: 0x0
+half-field-size/1:  field-width / 2
+half-field-size/2: field-height / 2
 
 correction-offset: 0x0
 correction-offset/1: correction-offset/2: margin-board
@@ -151,7 +151,7 @@ play-computer-move: func [
 	/local 
 		computer-move [block!]
 		move-pairs [block!]
-][
+][ print "play-computer-move"
 	; set message to computing move now
 	set-message computer-has	
 	
@@ -175,10 +175,13 @@ play-computer-move: func [
 	move-list: make-move-list play-board ( 1 - computer-has )
 	play-moves: display-moves-list move-list
 
+	show piece-panel
+
 	; reset message
 	set-message 1 - computer-has
 	; set move pictogram to player
-	change-move-indication 1 - computer-has
+	change-move-indication ( 1 - computer-has )
+	
 ]
 
 ;---------------------------------
@@ -199,7 +202,11 @@ new-game-as: func [
 	
 	;replace all pieces on the board
 	board-pieces: copy all-pieces
-	
+
+	; reset last played move indication
+	played-move-canvas/draw: copy []
+	;show played-move-canvas
+
 	reversed-board?: false
 	
 	if computer-has = RED-0 [
@@ -243,16 +250,24 @@ integer-move-to-GUI-move: function [
 
 change-move-indication: func [
 	to-color [integer!]
-][
+][ print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset player-color-to-move/color]
 	either BLACK-1 = to-color [
-		red-to-move/size: 0x0
+	print "black to move"
+		red-to-move/size: 4x4
 		black-to-move/size: move-indicator-size
+		player-color-to-move/color: purple
 	][
+	print "red to move"
 		red-to-move/size: move-indicator-size
-		black-to-move/size: 0x0
+		black-to-move/size: 4x4
+		player-color-to-move/color: green
 	]
+	
+print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset player-color-to-move/color]
 	show red-to-move
 	show black-to-move
+	show player-color-to-move
+	;show win/pane
 ]
 
 text-move-for-computer: "Computing move now..."
@@ -319,7 +334,7 @@ gui-play-move: func [
 		move [block!]
 		piece-id [string!]
 		computer-offset [pair!]
-][
+][ print "gui-play-move"
 	field-from: xy-to-field move-from
 	field-to:   xy-to-field move-to
 	piece: play-board/:field-from
@@ -339,11 +354,13 @@ gui-play-move: func [
 	board-pieces: head board-pieces
 	board-pieces: back find board-pieces move-from
 	board-pieces/2: move-to
+	print ["move from " move-from "to " move-to]
 	if computer [
 		; adjust face/offset of played piece
+		;print "computermove"
 		foreach computerpiece piece-panel/pane [
-			if computerpiece/id = board-pieces/1 [
-				computer-offset: left-upper-corner/offset + margins + ( field-size * move-to ) + half-image-size - half-field
+			if computerpiece/id = board-pieces/1 [ ;print ["computerpiece" computerpiece/id ]
+				computer-offset: left-upper-corner/offset + margins + ( field-size * move-to ) + half-image-size - half-field-size
 				computerpiece/offset: computer-offset
 			]
 		]
@@ -568,7 +585,7 @@ piece-actors: object [
 				face/offset: get-drag-saved-offset
 			][
 				relative-offset: 0x0
-				relative-offset: face/offset - left-upper-corner/offset - correction-offset + half-field
+				relative-offset: face/offset - left-upper-corner/offset - correction-offset + half-field-size
 				
 				either any [0 > relative-offset/1 
 							0 > relative-offset/2][
@@ -586,10 +603,12 @@ piece-actors: object [
 							; perform the players move on the play-board block
 							gui-play-move get-save-from-xy drop-fotxy						
 							; set the piece face/offset to the new location (exact placing on grid)
-							drop-fotxy: drop-fotxy * field-size + half-image-size - half-field
+							drop-fotxy: drop-fotxy * field-size + half-image-size - half-field-size
 							; Because win/offset is on the outside of the window, generally a difference of 8x30 or 8x50
 							face/offset: left-upper-corner/offset + margins + drop-fotxy
-
+							; remove the move indicators from the layer
+							hints-canvas/draw: copy []
+							show hints-canvas
 							; and get the return move from the computer
 							play-computer-move
 						][
@@ -603,7 +622,7 @@ piece-actors: object [
 			hints-canvas/draw: copy []
 		]
 ]
-;-- einde actors
+;-- end actors
 
 rotated-board-position: function [
 	position [pair!]
@@ -749,7 +768,7 @@ win: make face! [
 	type: 'window text: "Xiangqi in Red by: Arnold" offset: 300x200 size: 400x500
 ]
 
-; -- Declare window pane
+;-- Declare window pane
 win/pane: reduce [
 
 	; Help positioning dropped piece relative to the inside of the window
@@ -759,16 +778,6 @@ win/pane: reduce [
 		size: 0x0
 	]
 	
-	black-to-move: make face! [
-		type: 'base offset: 375x10
-		size: 20x20 color: blue
-	]
-	
-	red-to-move: make face! [
-		type: 'base offset: 375x390
-		size: 20x20 color: red
-	]
-			
 	canvas: make face! [
 		type: 'base text: "Xiangqi in Red" offset: 100x100 size: 360x400 color: silver
 		draw: [
@@ -804,7 +813,7 @@ win/pane: reduce [
 		actors: object [
 			on-click: func [face [object!] event [event!]][
 				print "New game as Red player code to be added"
-				; new-game-as RED-0
+				new-game-as RED-0
 			]
 		]
 	]
@@ -814,7 +823,7 @@ win/pane: reduce [
 		actors: object [
 			on-click: func [face [object!] event [event!]][
 				print "New game as Black player code to be added"
-				;new-game-as BLACK-1
+				new-game-as BLACK-1
 			]
 		]
 	]	
@@ -830,14 +839,32 @@ win/pane: reduce [
 	]
 
 	piece-panel: make face! [
-		type:	'panel
+		type:	'base
 		offset: 0x0
 		size:	0x0
-		color:  none
+		color:	none
 		pane:	reduce pieces-pane-block
 	]
+
+	black-to-move: make face! [
+		type: 'base offset: 375x10
+		size: 20x20 color: blue
+	]
 	
-]
+	red-to-move: make face! [
+		type: 'base offset: 375x390
+		size: 20x20 color: red
+	]
+
+	player-color-to-move: make face! [
+		type: 'base 
+		offset: 375x250
+		size: 20x20 
+		color: none
+	]
+] 
+;-- end declare window pane
+
 ;--------------------------
 ; Set canvas size (360x400)
 ;--------------------------
@@ -845,9 +872,13 @@ canvas/size/1: 2 * margin-board + ( 8 * field-width )
 canvas/size/2: 2 * margin-board + ( 9 * field-height )
 
 ; Corrections on canvas offset
-canvas/offset: canvas-offset
-played-move-canvas/offset: canvas-offset
-hints-canvas/offset: canvas-offset
+canvas/offset:				canvas-offset
+played-move-canvas/offset:	canvas-offset
+hints-canvas/offset:		canvas-offset
+
+;piece-panel/offset:		correction-offset
+piece-panel/size:			canvas/size + half-field-size
+piece-panel/color:			0.0.0.255
 
 ;----------------------------------
 ; Start drawing board on the canvas
