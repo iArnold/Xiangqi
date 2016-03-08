@@ -3,7 +3,7 @@ Red [
 	filename: %xiangqi-board.red
 	author:   "Arnold van Hofwegen"
 	version:  0.6.0
-	date:     "07-Mrt-2016"
+	date:     "08-Mrt-2016"
 	Needs: 'View
 ]
 
@@ -157,6 +157,7 @@ play-computer-move: func [
 	
 	; set move pictogram to computer
 	change-move-indication computer-has
+	show black-to-move
 	
 	; compute the move
 	computer-move: get-computer-move
@@ -175,7 +176,7 @@ play-computer-move: func [
 	move-list: make-move-list play-board ( 1 - computer-has )
 	play-moves: display-moves-list move-list
 
-	show piece-panel
+	show pieces-layer
 
 	; reset message
 	set-message 1 - computer-has
@@ -250,24 +251,21 @@ integer-move-to-GUI-move: function [
 
 change-move-indication: func [
 	to-color [integer!]
-][ print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset player-color-to-move/color]
+][ 	;print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset ]
 	either BLACK-1 = to-color [
-	print "black to move"
+		print "black to move"
 		red-to-move/size: 4x4
-		black-to-move/size: move-indicator-size
-		player-color-to-move/color: purple
+		black-to-move/offset: black-to-move/offset + 10x10 
 	][
-	print "red to move"
-		red-to-move/size: move-indicator-size
-		black-to-move/size: 4x4
-		player-color-to-move/color: green
+		print "red to move"
+		red-to-move/size: 20x20
+		black-to-move/offset: black-to-move/offset - 10x10
 	]
 	
-print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset player-color-to-move/color]
-	show red-to-move
+	print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset ]
+	;show red-to-move
 	show black-to-move
-	show player-color-to-move
-	;show win/pane
+	;show win
 ]
 
 text-move-for-computer: "Computing move now..."
@@ -358,7 +356,7 @@ gui-play-move: func [
 	if computer [
 		; adjust face/offset of played piece
 		;print "computermove"
-		foreach computerpiece piece-panel/pane [
+		foreach computerpiece pieces-layer/pane [
 			if computerpiece/id = board-pieces/1 [ ;print ["computerpiece" computerpiece/id ]
 				computer-offset: left-upper-corner/offset + margins + ( field-size * move-to ) + half-image-size - half-field-size
 				computerpiece/offset: computer-offset
@@ -708,7 +706,7 @@ make-piece-faces: func [
 make-piece-faces 
 
 ;-- Make sure dragged piece moves over other pieces while dragging
-start-pieces-pane-block: copy [
+start-pieces-layer-pane-block: copy [
 	black-king	black-advisor-1	black-advisor-2	black-elephant-1	black-elephant-2
 	black-horse-1	black-horse-2	black-chariot-1	black-chariot-2	black-canon-1	black-canon-2
 	black-pawn-1	black-pawn-2	black-pawn-3	black-pawn-4	black-pawn-5
@@ -718,14 +716,14 @@ start-pieces-pane-block: copy [
 	white-pawn-1	white-pawn-2	white-pawn-3	white-pawn-4	white-pawn-5
 ]
 
-pieces-pane-block: copy []
+pieces-layer-pane-block: copy []
 
-init-pieces-pane-block: func [
+init-pieces-layer-pane-block: func [
 ][ 
-	pieces-pane-block: copy start-pieces-pane-block
+	pieces-layer-pane-block: copy start-pieces-layer-pane-block
 ]
 
-init-pieces-pane-block
+init-pieces-layer-pane-block
 
 piece-top-z-order: copy ""
 
@@ -838,12 +836,12 @@ win/pane: reduce [
 		]
 	]
 
-	piece-panel: make face! [
+	pieces-layer: make face! [
 		type:	'base
 		offset: 0x0
 		size:	0x0
 		color:	none
-		pane:	reduce pieces-pane-block
+		pane:	reduce pieces-layer-pane-block
 	]
 
 	black-to-move: make face! [
@@ -856,12 +854,6 @@ win/pane: reduce [
 		size: 20x20 color: red
 	]
 
-	player-color-to-move: make face! [
-		type: 'base 
-		offset: 375x250
-		size: 20x20 
-		color: none
-	]
 ] 
 ;-- end declare window pane
 
@@ -876,9 +868,9 @@ canvas/offset:				canvas-offset
 played-move-canvas/offset:	canvas-offset
 hints-canvas/offset:		canvas-offset
 
-;piece-panel/offset:		correction-offset
-piece-panel/size:			canvas/size + half-field-size
-piece-panel/color:			0.0.0.255
+;pieces-layer/offset:		correction-offset
+pieces-layer/size:			canvas/size + half-field-size
+pieces-layer/color:			0.0.0.255
 
 ;----------------------------------
 ; Start drawing board on the canvas
