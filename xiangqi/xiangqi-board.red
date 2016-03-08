@@ -255,11 +255,13 @@ change-move-indication: func [
 	either BLACK-1 = to-color [
 		print "black to move"
 		red-to-move/size: 4x4
-		black-to-move/offset: black-to-move/offset + 10x10 
+		;black-to-move/offset: black-to-move/offset - 10x10 
+		black-to-move/size: 20x20
 	][
 		print "red to move"
 		red-to-move/size: 20x20
-		black-to-move/offset: black-to-move/offset - 10x10
+		;black-to-move/offset: black-to-move/offset + 10x10
+		black-to-move/size: 1x1 
 	]
 	
 	print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset ]
