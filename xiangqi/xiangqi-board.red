@@ -3,7 +3,7 @@ Red [
 	filename: %xiangqi-board.red
 	author:   "Arnold van Hofwegen"
 	version:  0.6.0
-	date:     "08-Mrt-2016"
+	date:     "09-Mrt-2016"
 	Needs: 'View
 ]
 
@@ -157,7 +157,7 @@ play-computer-move: func [
 	
 	; set move pictogram to computer
 	change-move-indication computer-has
-	show black-to-move
+	show indicator-black-move
 	
 	; compute the move
 	computer-move: get-computer-move
@@ -176,12 +176,13 @@ play-computer-move: func [
 	move-list: make-move-list play-board ( 1 - computer-has )
 	play-moves: display-moves-list move-list
 
-	show pieces-layer
+	;show pieces-layer
 
 	; reset message
 	set-message 1 - computer-has
 	; set move pictogram to player
 	change-move-indication ( 1 - computer-has )
+	show indicator-black-move
 	
 ]
 
@@ -251,22 +252,20 @@ integer-move-to-GUI-move: function [
 
 change-move-indication: func [
 	to-color [integer!]
-][ 	;print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset ]
+][ 	;print ["to-color" to-color move-indicator-size indicator-red-move/size indicator-red-move/offset indicator-black-move/size indicator-black-move/offset ]
 	either BLACK-1 = to-color [
 		print "black to move"
-		red-to-move/size: 4x4
-		;black-to-move/offset: black-to-move/offset - 10x10 
-		black-to-move/size: 20x20
+		indicator-red-move/size: 4x4
+		indicator-black-move/color: blue
 	][
 		print "red to move"
-		red-to-move/size: 20x20
-		;black-to-move/offset: black-to-move/offset + 10x10
-		black-to-move/size: 1x1 
+		indicator-red-move/size: 20x20
+		indicator-black-move/color: red
 	]
 	
-	print ["to-color" to-color move-indicator-size red-to-move/size red-to-move/offset black-to-move/size black-to-move/offset ]
-	;show red-to-move
-	show black-to-move
+	print ["to-color" to-color move-indicator-size indicator-red-move/size indicator-red-move/offset indicator-black-move/size indicator-black-move/offset ]
+	;show indicator-red-move
+	show indicator-black-move
 	;show win
 ]
 
@@ -846,12 +845,12 @@ win/pane: reduce [
 		pane:	reduce pieces-layer-pane-block
 	]
 
-	black-to-move: make face! [
+	indicator-black-move: make face! [
 		type: 'base offset: 375x10
 		size: 20x20 color: blue
 	]
 	
-	red-to-move: make face! [
+	indicator-red-move: make face! [
 		type: 'base offset: 375x390
 		size: 20x20 color: red
 	]
