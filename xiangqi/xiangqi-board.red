@@ -151,13 +151,13 @@ play-computer-move: func [
 	/local 
 		computer-move [block!]
 		move-pairs [block!]
-][ print "play-computer-move"
+][ ;print "play-computer-move"
 	; set message to computing move now
 	set-message computer-has	
 	
 	; set move pictogram to computer
-	change-move-indication computer-has
-	show indicator-black-move
+	;change-move-indication computer-has
+;	show indicator-black-move
 	
 	; compute the move
 	computer-move: get-computer-move
@@ -181,8 +181,8 @@ play-computer-move: func [
 	; reset message
 	set-message 1 - computer-has
 	; set move pictogram to player
-	change-move-indication ( 1 - computer-has )
-	show indicator-black-move
+	;change-move-indication ( 1 - computer-has )
+;	show indicator-black-move
 	
 ]
 
@@ -250,24 +250,24 @@ integer-move-to-GUI-move: function [
 	out
 ]
 
-change-move-indication: func [
-	to-color [integer!]
-][ 	;print ["to-color" to-color move-indicator-size indicator-red-move/size indicator-red-move/offset indicator-black-move/size indicator-black-move/offset ]
-	either BLACK-1 = to-color [
-		print "black to move"
-		indicator-red-move/size: 4x4
-		indicator-black-move/color: blue
-	][
-		print "red to move"
-		indicator-red-move/size: 20x20
-		indicator-black-move/color: red
-	]
-	
-	print ["to-color" to-color move-indicator-size indicator-red-move/size indicator-red-move/offset indicator-black-move/size indicator-black-move/offset ]
-	;show indicator-red-move
-	show indicator-black-move
-	;show win
-]
+;change-move-indication: func [
+;	to-color [integer!]
+;][ 	;print ["to-color" to-color move-indicator-size indicator-red-move/size indicator-red-move/offset indicator-black-move/size indicator-black-move/offset ]
+;	either BLACK-1 = to-color [
+;		print "black to move"
+;		indicator-red-move/size: 4x4
+;		indicator-black-move/color: blue
+;	][
+;		print "red to move"
+;		indicator-red-move/size: 20x20
+;		indicator-black-move/color: red
+;	]
+;	
+;	print ["to-color" to-color move-indicator-size indicator-red-move/size indicator-red-move/offset indicator-black-move/size indicator-black-move/offset ]
+;	;show indicator-red-move
+;	;show indicator-black-move
+;	;show win
+;]
 
 text-move-for-computer: "Computing move now..."
 text-move-for-player:   "Your move"
@@ -413,7 +413,7 @@ take-back-move: func [
 		gui-undo-one-ply
 	][
 		; if computer is red/white play a new move
-		change-move-indication RED-0
+		;change-move-indication RED-0
 		if RED-0 = computer-has [
 			; compute the best move (again)
 		]
@@ -845,15 +845,15 @@ win/pane: reduce [
 		pane:	reduce pieces-layer-pane-block
 	]
 
-	indicator-black-move: make face! [
-		type: 'base offset: 375x10
-		size: 20x20 color: blue
-	]
+;	indicator-black-move: make face! [
+;		type: 'base offset: 375x10
+;		size: 20x20 color: blue
+;	]
 	
-	indicator-red-move: make face! [
-		type: 'base offset: 375x390
-		size: 20x20 color: red
-	]
+;	indicator-red-move: make face! [
+;		type: 'base offset: 375x390
+;		size: 20x20 color: red
+;	]
 
 ] 
 ;-- end declare window pane
