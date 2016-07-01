@@ -1,4 +1,9 @@
-﻿	img-advisor-tb: load/as #64 {iVBORw0KGgoAAAANSUhEUgAAAE4AAABOCAYAAACOqiAdAAAAAXNSR
+Red [
+	file:	%load-all-images.red
+	author: "Arnold van Hofwegen"
+]
+
+	img-advisor-tb: load/as #64 {iVBORw0KGgoAAAANSUhEUgAAAE4AAABOCAYAAACOqiAdAAAAAXNSR
 		 0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAA2bSURBVHhe7ZwHuF
 		 TFFYCX9+i9SEcEqSIdaVKkV0VAioIIAgIKCAJSRURqKFIEVEBRsGAjJjG2qNhrjEGj2GtiiT0au07
 		 Of97OOnv3vmX3vW2PMN/3f+/du3dn5s5OOefMmRNIYyostBPOFlYINwsvCm8KHwufC18G/74ncP8R
