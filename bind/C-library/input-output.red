@@ -1,7 +1,7 @@
 Red [
 	Title:		"Local file Input/Output"
 	Author:		"Kaj de Vos"
-	Rights:		"Copyright (c) 2013-2015 Kaj de Vos. All rights reserved."
+	Rights:		"Copyright (c) 2013-2016 Kaj de Vos. All rights reserved."
 	License: {
 		Redistribution and use in source and binary forms, with or without modification,
 		are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@ Red [
 		OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	}
 	Needs: {
-		Red > 0.5.4
+		Red >= 0.6
 		%common/common.red
 	}
 	Tabs:		4
@@ -34,7 +34,7 @@ Red [
 #include %../common/common.red
 
 
-;context [  ; Red FIXME
+context [  ; Red FIXME
 
 	read-string: routine ["Read and return a UTF-8 text file."
 		name			[integer!]  "c-string!"  ; [file! url!]
@@ -109,28 +109,24 @@ Red [
 			]
 		]
 	]
-	set 'read function [								"Read and return a file."
-		name			[file! url! integer!]
+	set 'read* function [								"Read and return a file."
+		name			[file! url! string! integer!]
+		/binary											"Return file as binary."
 		/string											"Read file as text."
 		/lines											"Return block of text lines."
-		/binary											"Return file as binary."
 		return:			[string! block! integer! none!]
 	][
-		all [
-			name*: either integer? name [name] [to-local-file name]
-			(
-				ok: either binary [
-					either string [read-string-binary name*] [read-binary name*]
-				][
-					all [
-						file: read-string name*
-						either lines [split/only file newline] [file]
-					]
+		if name*: either integer? name [name] [to-local-file name] [
+			ok: either binary [
+				either string [read-string-binary name*] [read-binary name*]
+			][
+				if file: read-string name* [
+					either lines [split*/only file newline] [file]
 				]
-				unless integer? name [free-any name*]
+			]
+			unless integer? name [free-any name*]
 
-				ok
-			)
+			ok
 		]
 	]
 
@@ -175,8 +171,8 @@ Red [
 			write-binary-part name  as-integer array/data  array/size
 		]
 	]
-	set 'write function [								"Write file."
-		name			[file! url! integer!]
+	set 'write* function [								"Write file."
+		name			[file! url! string! integer!]
 		data			[string! integer!]
 		/part											"Write (part of) binary DATA."
 			size		[integer!]
@@ -232,10 +228,6 @@ comment {
 		]
 	]
 
-}
-
-context [
-
 	do*: :do
 	result: make block! 1  ; WARN: not thread safe
 
@@ -246,5 +238,7 @@ context [
 
 		first head reduce/into dummy: [do* source] clear result  ; Force use of interpreter
 	]
+
+}
 
 ]
