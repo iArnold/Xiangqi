@@ -4,6 +4,9 @@ Xiangqi in Red (Version 0.6.0!)
 -------------------------------
 
 The game of Xiangqi programmed using the programming language Red.
+The program is reported not to work with the new version of Red, version 0.6.1.
+I updated the bindings to the most recent available (05-06-2016) but this is no guaranty it will work now.
+At the moment I have no intention to update for every upgrade of Red, for that takes too much of my time.
 
 What is the Red programming language?
 -------------------------------------
