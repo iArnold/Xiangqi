@@ -1,7 +1,7 @@
 Red [
 	Title:		"Common Definitions"
 	Author:		"Kaj de Vos"
-	Rights:		"Copyright (c) 2013-2015 Kaj de Vos. All rights reserved."
+	Rights:		"Copyright (c) 2013-2016 Kaj de Vos. All rights reserved."
 	License: {
 		Redistribution and use in source and binary forms, with or without modification,
 		are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@ Red [
 		OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	}
 	Needs: {
-		Red > 0.5.4
+		Red > 0.6
 		%C-library/ANSI.reds
 	}
 	Tabs:		4
@@ -37,6 +37,7 @@ Red [
 ; Buffer working space
 
 ; WARN: not thread safe
+binary*: make binary! 0
 _string: make string! 0
 _file: make file! 0
 _block: make block! 0
@@ -64,6 +65,18 @@ pop: function ["Return a value removed from top of stack."
 	clear back tail stack
 	value
 ]
+
+
+; PARSE rules
+
+blank:			charset " ^(tab)^(line)^M^(page)"
+
+letter:			charset [#"A" - #"Z"  #"a" - #"z"]
+
+digit:			charset "0123456789"
+non-zero:		charset "123456789"
+octal:			charset "01234567"
+hexadecimal:	union digit charset [#"A" - #"F"  #"a" - #"f"]
 
 
 ; Binary
@@ -106,6 +119,56 @@ data-of: routine ["Return data of a binary array."
 	][
 		array: as array1! binary
 		as-integer array/data
+	]
+]
+
+part-to-string: routine ["Return string converted from part of UTF-8 binary."
+	data			[binary!]
+	text			[string!]
+	size			[integer!]
+;	return:			[string!]
+][
+	string/rs-reset text  ; Ensure Latin 1
+
+	if positive? size [
+		unicode/load-utf8-buffer
+			as-c-string binary/rs-head data  size
+			GET_BUFFER (text)  null
+			no
+		text/cache: null
+	]
+	SET_RETURN (text)
+]
+
+percent-decode: function ["Return string with percent-escaped characters decoded."
+	text			[string!]  "Text to decode (changed, returned)"
+	return:			[string!]
+	/local character high
+][
+	either find/case text #"%" [
+		clear binary*
+		parse text [any [
+;			#"%" remove #"%"
+;		|
+			#"%" set high hexadecimal  set character hexadecimal
+			(append binary*
+				(either high > #"9" [
+					5Fh and high - 55  ; - #"A" + 10
+				][
+					to integer! high - #"0"
+				]) << 4 or  ; Red FIXME
+				either character > #"9" [
+					character and 5Fh - 55  ; - #"A" + 10
+				][
+					character - #"0"
+				]
+			)
+		|
+			set character skip (append binary* character)
+		]]
+		part-to-string binary* text  length? binary*
+	][
+		text
 	]
 ]
 
@@ -363,7 +426,7 @@ shift: func ["Return INTEGER with bits shifted by BITS positions."
 					index: index + 4
 				]
 				yes [
-					print-line "Error in UCS4-to-UTF8: codepoint above 1FFFFFh"
+					print-line "Error: UCS4-to-UTF8: codepoint above 1FFFFFh"
 				]
 			]
 			text: text + 1
@@ -405,15 +468,15 @@ shift: func ["Return INTEGER with bits shifted by BITS positions."
 				]
 
 				head: string/rs-head name
-				size: as-integer (string/rs-tail name) - head + 1  ; Closing null seems to be at tail
+				size: (as-integer (string/rs-tail name) - head) + 1
 
 ;				if zero? size [return null]
 
 				out: allocate size
 
 				if as-logic out [
-					copy-part head out size
-					out/size: null-byte  ; For safety
+					copy-part head out  size - 1
+					out/size: null-byte
 				]
 				as-c-string out
 			]
@@ -441,12 +504,14 @@ to-local-file: func ["Return file name encoded for local system."
 	name			[file! url!]
 	return:			[integer! none!]  "c-string!; NONE: error"
 ][
-	all [
-		not zero? name: either file? name [
-			file-to-local-file name
-		][
-			url-to-local-file name
-		]
+;	unless zero? name: either file? name [
+	either zero? name: either file? name [
+		file-to-local-file name
+	][
+		url-to-local-file name
+	][
+		print "Error: to-local-file"
+	][
 		name
 	]
 ]
@@ -505,7 +570,7 @@ to-binary: routine ["Return string converted to UTF-8 binary."
 	]
 ]
 
-join: routine ["Return string converted to UTF-8 binary, joined with other binary."
+join-UTF8-binary: routine ["Return string converted to UTF-8 binary, joined with other binary."
 	text			[string!]
 	binary			[integer!]  "array1!"
 ;	return:			[integer! none!]  "NONE: error"
@@ -539,18 +604,17 @@ join: routine ["Return string converted to UTF-8 binary, joined with other binar
 		]
 	]
 ]
-
-
-; PARSE rules
-
-blank:			charset " ^(tab)^(line)^M^(page)"
-
-letter:			charset [#"A" - #"Z"  #"a" - #"z"]
-
-digit:			charset "0123456789"
-non-zero:		charset "123456789"
-octal:			charset "01234567"
-hexadecimal:	union digit charset [#"A" - #"F"  #"a" - #"f"]
+join: function ["Copy SERIES and append VALUE."
+	series			[series!]
+	value
+	return:			[series! integer! none!]
+][
+	either all [string? series  integer? value] [
+		join-UTF8-binary series value
+	][
+		append copy series  value
+	]
+]
 
 
 ; Common functions
@@ -610,6 +674,7 @@ single?: func ["Test if series has just one element."
 	last? series
 ]
 
+comment {
 offset?: func ["Return difference between two positions in a series."
 	series1			[series!]
 	series2			[series!]
@@ -617,6 +682,7 @@ offset?: func ["Return difference between two positions in a series."
 ][
 	subtract index? series2  index? series1
 ]
+}
 
 before-last: func ["Return next to last value of series."
 	series			[series!]
@@ -624,7 +690,7 @@ before-last: func ["Return next to last value of series."
 	pick tail series -2
 ]
 
-split: function ["Return SERIES in pieces split at DELIMITER."
+split*: function ["Return SERIES in pieces split at DELIMITER."
 	series			[series!]
 	delimiter
 	/case			"Find delimiters strictly."
@@ -649,7 +715,7 @@ split: function ["Return SERIES in pieces split at DELIMITER."
 	out
 ]
 
-clean-path: function [
+clean-path*: function [
 	"Remove unneeded constructs from a path and check that it doesn't point outside its base folder."
 	file			[file! url! string!]	"File path to clean (changed, returned)"
 	return:			[file! string! none!]	"NONE: path is unsafe"
@@ -701,4 +767,19 @@ count-lines: func ["Return number of lines in STRING."
 	return:			[integer!]
 ][
 	1 + do [count string newline]  ; Red FIXME
+]
+
+break-line: function ["Set line break on a single value."
+	value
+][
+	first new-line append/only clear _item  value yes
+]
+break-lines: function ["Set multiple line breaks from PLACE at SIZE intervals."
+	place			[any-block!]
+	size			[integer!]
+	return:			[any-block!]
+][
+	if size < length? place [new-line/all/skip place yes size]
+
+	place
 ]
