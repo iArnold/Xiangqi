@@ -21,8 +21,9 @@ Because code written in Red means that the source of this program will be very r
 unlike similar open sourced chess programs that use C or C++ and contain functions with 
 cryptic short names like 'D' and 'S'. Generally the existing chess programs if they are
 open sourced at all, are hard to follow because of their effective use of the internal 
-computer memory and there will be a lot of binary calculations happening. Calculations 
-that mean very little to people trying to understand what is going on.
+computer memory and there will be a lot of binary calculations happening. Not only will 
+all these calculations mean very little to people trying to understand what is going on in
+certain parts of the program, the sources are also often sparsely, if at all, commented.
 
 The Red program for Xiangqi will make use of a human understandable representation of the 
 chessboard and the code that works on it will be better understandable as a consequence.
