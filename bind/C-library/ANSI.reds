@@ -1,7 +1,7 @@
 Red/System [
 	Title:		"ANSI C Library Binding"
 	Author:		"Kaj de Vos"
-	Rights:		"Copyright (c) 2011-2013,2015 Kaj de Vos. All rights reserved."
+	Rights:		"Copyright (c) 2011-2013,2015,2016 Kaj de Vos. All rights reserved."
 	License: {
 		Redistribution and use in source and binary forms, with or without modification,
 		are permitted provided that the following conditions are met:
@@ -639,7 +639,7 @@ date!: alias struct! [
 
 	; System interfacing
 
-	get-env: "getenv" [						"Get system environment variable."
+	get-environment: "getenv" [				"Return system environment variable."
 		name			[c-string!]
 		return:			[c-string!]
 	]
@@ -1457,8 +1457,8 @@ format-date: function ["Format date as string."
 	positive? _format-date string size format date
 ]
 
-get-process-seconds: function ["CPU time used by process; wall-clock time on Windows!"
-	return:			[float!]  "-1: unknown"
+get-process-seconds: function ["CPU time used by process in seconds; wall-clock time on Windows!"
+	return:			[float!]  "-1.0: unknown"
 	/local			time
 ][
 	time: get-process-time
