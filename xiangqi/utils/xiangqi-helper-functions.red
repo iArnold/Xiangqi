@@ -20,4 +20,5 @@ comment {
 #include %red-found.red
 
 ; Because rejoin is so much nicer than all appends
-#include %red-rejoin.red
+; Same Rejoin function has been added in commit 6526 on 7 july 2016
+;#include %red-rejoin.red
