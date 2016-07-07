@@ -1,7 +1,7 @@
-Red [ "Reduces and joins a block of values." 
+Red [ "Finally also added to Reds repository in commit 5626 on 6 july 2016"
 ]
 
-rejoin: func [
+rejoin: function [ "Reduces and joins a block of values." 
     block [block!] "Values to reduce and join"
 ][
     if empty? block: reduce block [return block] 
